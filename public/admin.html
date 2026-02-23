@@ -9,110 +9,111 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="bg-light">
-    <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-sm navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">Leave System — Admin</a>
-        <div class="d-flex">
-          <button id="logout" class="btn btn-outline-light btn-sm">Logout</button>
+        <a class="navbar-brand fw-bold" href="#">🎯 Leave System — Admin</a>
+        <div class="d-flex gap-3">
+          <button id="themeToggle" class="btn btn-outline-light btn-sm" style="border-radius:8px">🌙</button>
+          <button id="logout" class="btn btn-outline-light btn-sm" style="border-radius:8px">Logout</button>
         </div>
       </div>
     </nav>
     <main class="container-fluid py-4">
       <div class="row">
         <aside class="col-md-3 mb-3">
-          <div class="card shadow-sm h-100">
-            <div class="card-body p-2">
-              <div class="d-flex align-items-center mb-3">
-                <span class="brand-mark"></span>
+          <div class="card shadow-lg h-100" style="border-radius:16px;border:none;background:linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+            <div class="card-body p-3">
+              <div class="d-flex align-items-center mb-4 pb-3 border-bottom" style="border-color:#e0e0e0!important">
+                <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;margin-right:12px;font-size:24px;">👤</div>
                 <div>
-                  <div class="fw-bold">Admin</div>
-                  <div id="adminDept" class="text-muted small">Department</div>
+                  <div class="fw-bold" style="color:#333;font-size:16px;">Admin Panel</div>
+                  <div id="adminDept" class="text-muted small">System Manager</div>
                 </div>
               </div>
-              <div class="list-group">
-                <button class="list-group-item list-group-item-action active" data-view="requests">Requests</button>
-                <button class="list-group-item list-group-item-action" data-view="balances">Balances</button>
-                <button class="list-group-item list-group-item-action" data-view="analytics">Analytics</button>
-                <button class="list-group-item list-group-item-action" data-view="departments">Departments</button>
-                <button class="list-group-item list-group-item-action" data-view="createUser">Create User</button>
-                <button class="list-group-item list-group-item-action" data-view="users">Users</button>
+              <div class="list-group" style="border:none;gap:8px;display:flex;flex-direction:column;">
+                <button class="list-group-item list-group-item-action active" data-view="requests" style="border-radius:10px;border:none;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;font-weight:500;">📋 Requests</button>
+                <button class="list-group-item list-group-item-action" data-view="balances" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">⚖️ Balances</button>
+                <button class="list-group-item list-group-item-action" data-view="analytics" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">📊 Analytics</button>
+                <button class="list-group-item list-group-item-action" data-view="departments" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">🏢 Departments</button>
+                <button class="list-group-item list-group-item-action" data-view="createUser" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">➕ Create User</button>
+                <button class="list-group-item list-group-item-action" data-view="users" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">👥 Users</button>
               </div>
             </div>
           </div>
         </aside>
         <section class="col-md-9">
           <div id="view-requests" class="view">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Requests</h5>
-                <ul id="requests" class="list-group"></ul>
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📋 Leave Requests</h5>
+                <ul id="requests" class="list-group" style="border:none;gap:12px;display:flex;flex-direction:column;"></ul>
               </div>
             </div>
           </div>
 
           <div id="view-balances" class="view d-none">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Balances</h5>
-                <div id="balances"></div>
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">⚖️ Leave Balances</h5>
+                <div id="balances" style="display:grid;gap:12px;"></div>
               </div>
             </div>
           </div>
 
           <div id="view-analytics" class="view d-none">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Analytics</h5>
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📊 Analytics Dashboard</h5>
                 <div class="row">
-                  <div class="col-md-6"><canvas id="chart-dept"></canvas></div>
-                  <div class="col-md-6"><canvas id="chart-type"></canvas></div>
+                  <div class="col-md-6" style="padding:20px;background:#f8f9fa;border-radius:12px;margin-bottom:12px;"><canvas id="chart-dept"></canvas></div>
+                  <div class="col-md-6" style="padding:20px;background:#f8f9fa;border-radius:12px;margin-bottom:12px;"><canvas id="chart-type"></canvas></div>
                 </div>
               </div>
             </div>
           </div>
 
           <div id="view-createUser" class="view d-none">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Create User</h5>
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">➕ Create New User</h5>
                 <form id="createUserForm">
-                  <div class="mb-2"><input class="form-control" placeholder="Full name" id="u_full_name" required></div>
-                  <div class="mb-2"><input class="form-control" placeholder="Email" id="u_email" type="email" required></div>
-                  <div class="mb-2"><input class="form-control" placeholder="Password" id="u_password" type="password" required></div>
-                  <div class="mb-2">
-                    <select id="u_role" class="form-select">
-                      <option value="employee">Employee</option>
-                      <option value="HOD">HOD</option>
-                      <option value="admin">Admin</option>
+                  <div class="mb-3"><input class="form-control" placeholder="Full name" id="u_full_name" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="mb-3"><input class="form-control" placeholder="Email" id="u_email" type="email" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="mb-3"><input class="form-control" placeholder="Password" id="u_password" type="password" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="mb-3">
+                    <select id="u_role" class="form-select" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
+                      <option value="employee">👤 Employee</option>
+                      <option value="HOD">🎯 HOD</option>
+                      <option value="admin">🛡️ Admin</option>
                     </select>
                   </div>
-                  <div class="mb-2"><input class="form-control" placeholder="Department (optional)" id="u_department"></div>
-                  <div class="d-grid"><button class="btn btn-primary">Create</button></div>
+                  <div class="mb-3"><input class="form-control" placeholder="Department (optional)" id="u_department" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="d-grid"><button class="btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:10px;padding:12px;font-weight:600;">✨ Create User</button></div>
                 </form>
               </div>
             </div>
           </div>
 
           <div id="view-departments" class="view d-none">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Departments</h5>
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">🏢 Department Management</h5>
                 <div class="mb-3 d-flex gap-2">
-                  <input id="deptName" class="form-control" placeholder="Department name">
-                  <select id="deptHod" class="form-select" style="width:320px">
+                  <input id="deptName" class="form-control" placeholder="Department name" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
+                  <select id="deptHod" class="form-select" style="width:320px;border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
                     <option value="">(No HOD)</option>
                   </select>
-                  <button id="createDept" class="btn btn-primary">Create</button>
+                  <button id="createDept" class="btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:10px;padding:12px;font-weight:600;white-space:nowrap;">➕ Create</button>
                 </div>
-                <div id="departmentsList"></div>
+                <div id="departmentsList" style="display:grid;gap:12px;"></div>
               </div>
             </div>
           </div>
 
           <div id="view-users" class="view d-none">
-            <div class="card shadow-sm mb-3">
-              <div class="card-body">
-                <h5 class="card-title">Users</h5>
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">👥 User Management</h5>
                 <div id="usersList"></div>
                 <!-- Reset password modal -->
                 <div id="resetModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(2px)">
@@ -160,7 +161,8 @@
       const r = await (await fetch('/api/leave_requests')).json(); const el=document.getElementById('requests'); el.innerHTML='';
       r.forEach(x=>{
         const li=document.createElement('li'); li.className='list-group-item';
-        li.innerHTML = `<div class='d-flex justify-content-between align-items-start'><div><b>${x.full_name}</b><div class='small text-muted'>${x.leave_type} ${x.start_date} → ${x.end_date} (${x.days})</div></div><div><button class='btn btn-sm btn-success me-1' data-id='${x.id}' data-act='approve'>Approve</button><button class='btn btn-sm btn-danger' data-id='${x.id}' data-act='reject'>Reject</button></div></div>`;
+        const statusColor = x.status === 'pending' ? '#ff6b6b' : x.status === 'hod_approved' ? '#4ecdc4' : '#95e1d3';
+        li.innerHTML = `<div style='padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid ${statusColor};'><div class='d-flex justify-content-between align-items-start'><div><b style='font-size:16px;'>${x.full_name}</b><div class='small text-muted'>${x.leave_type} • ${x.start_date} → ${x.end_date} • <span style='background:#f0f0f0;padding:2px 8px;border-radius:4px;'>${x.days} days</span></div></div><div class='d-flex gap-2'><button class='btn btn-sm' style='background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);color:white;border:none;border-radius:8px;' data-id='${x.id}' data-act='approve'>✓ Approve</button><button class='btn btn-sm' style='background:linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);color:white;border:none;border-radius:8px;' data-id='${x.id}' data-act='reject'>✕ Reject</button></div></div></div>`;
         el.appendChild(li);
       });
       document.querySelectorAll('button[data-id]').forEach(btn=>btn.onclick=async e=>{
@@ -172,7 +174,7 @@
 
     async function refreshBalances(){
       const b = await (await fetch('/api/balances')).json(); const be=document.getElementById('balances'); be.innerHTML='';
-      b.forEach(x=>{ const row=document.createElement('div'); row.className='mb-2 d-flex gap-2 align-items-center'; row.innerHTML = `<div class='flex-grow-1'><strong>${x.full_name}</strong><div class='text-muted small'>${x.leave_type}</div></div><input class='form-control form-control-sm' style='width:90px' value='${x.remaining_days}' data-user='${x.user_id}' data-type='${x.leave_type_id}'/><button class='btn btn-sm btn-primary' data-save='${x.user_id}-${x.leave_type_id}'>Save</button>`; be.appendChild(row); });
+      b.forEach(x=>{ const row=document.createElement('div'); row.className='mb-2 d-flex gap-2 align-items-center'; row.style.cssText='padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid #667eea;'; row.innerHTML = `<div class='flex-grow-1'><strong style='font-size:16px;'>${x.full_name}</strong><div class='text-muted small'>${x.leave_type}</div></div><input class='form-control form-control-sm' style='width:90px;border-radius:8px;border:none;background:#f0f0f0;' value='${x.remaining_days}' data-user='${x.user_id}' data-type='${x.leave_type_id}'/><button class='btn btn-sm' style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:8px;' data-save='${x.user_id}-${x.leave_type_id}'>Save</button>`; be.appendChild(row); });
       document.querySelectorAll('button[data-save]').forEach(btn=>btn.onclick=async ()=>{ const key = btn.getAttribute('data-save'); const [u,t]=key.split('-'); const input = btn.previousElementSibling; const val = parseInt(input.value); const res = await fetch(`/api/balances/${u}/${t}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({remaining_days:val})}); if(res.ok) { await refreshBalances(); } else alert(JSON.stringify(await res.json())); });
     }
 
@@ -184,13 +186,12 @@
         const deptData = d.map(r=> r.days || 0);
         const typeLabels = t.map(r=> r.type);
         const typeData = t.map(r=> r.days || 0);
-        // destroy existing charts if present
         if(window._deptChart) window._deptChart.destroy();
         if(window._typeChart) window._typeChart.destroy();
         const ctxD = document.getElementById('chart-dept').getContext('2d');
-        window._deptChart = new Chart(ctxD, {type:'bar', data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:'#7c3aed'}]}});
+        window._deptChart = new Chart(ctxD, {type:'bar', data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:['#667eea','#764ba2','#f093fb','#4facfe'], borderRadius:8, borderSkipped:false}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}, scales:{y:{beginAtZero:true,ticks:{font:{size:12}}}}}});
         const ctxT = document.getElementById('chart-type').getContext('2d');
-        window._typeChart = new Chart(ctxT, {type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#4f46e5','#06b6d4','#f59e0b']} ]}});
+        window._typeChart = new Chart(ctxT, {type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#667eea','#764ba2','#f093fb','#4facfe','#fa709a','#fee140'], borderWidth:3, borderColor:'#ffffff'}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}}});
       }catch(e){ console.error(e); }
     }
 
@@ -222,40 +223,26 @@
       const depts = await (await fetch('/api/departments')).json();
       const list = document.getElementById('usersList');
       
-      // Build map: department name -> HOD name
       const deptHodMap = {};
       depts.forEach(d=> deptHodMap[d.name] = d.hod_name || '(none)');
       
-      // Build map: user_id -> {annual, sick}
       const userBalanceMap = {};
       balances.forEach(b=>{
         if(!userBalanceMap[b.user_id]) userBalanceMap[b.user_id] = {};
         userBalanceMap[b.user_id][b.leave_type] = b.remaining_days;
       });
       
-      // Create table
-      let html = `<table class='table table-sm table-hover'><thead><tr><th>Name</th><th>Department</th><th>HOD</th><th>Annual</th><th>Sick</th><th>Actions</th></tr></thead><tbody>`;
-      users.forEach(u=>{
+      let html = `<div style='overflow-x:auto;'><table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>👤 Name</th><th style='padding:12px;font-weight:600;'>🏢 Department</th><th style='padding:12px;font-weight:600;'>👔 HOD</th><th style='padding:12px;font-weight:600;'>📅 Annual</th><th style='padding:12px;font-weight:600;'>🏥 Sick</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>⚙️ Actions</th></tr></thead><tbody>`;
+      users.forEach((u,idx)=>{
         const annual = userBalanceMap[u.id]?.Annual || 0;
         const sick = userBalanceMap[u.id]?.Sick || 0;
         const hod = deptHodMap[u.department] || '—';
-        html += `<tr>
-          <td><strong>${u.full_name}</strong><div class='text-muted small'>${u.email}</div></td>
-          <td>${u.department || '—'}</td>
-          <td>${hod}</td>
-          <td>${annual}</td>
-          <td>${sick}</td>
-          <td>
-            <button class='btn btn-sm btn-outline-secondary me-1' data-edit='${u.id}'>Edit</button>
-            <button class='btn btn-sm btn-outline-warning me-1' data-reset='${u.id}' data-name='${u.full_name}'>Reset PW</button>
-            <button class='btn btn-sm btn-danger' data-delete='${u.id}'>Delete</button>
-          </td>
-        </tr>`;
+        const bgColor = idx % 2 === 0 ? '#f8f9fa' : '#ffffff';
+        html += `<tr style='background:${bgColor};border-radius:12px;'>\n          <td style='border-radius:8px 0 0 8px;padding:12px;'><strong style='display:block;'>${u.full_name}</strong><div class='text-muted' style='font-size:12px;'>${u.email}</div></td>\n          <td style='padding:12px;'>${u.department || '—'}</td>\n          <td style='padding:12px;'>${hod}</td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${annual}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${sick}</span></td>\n          <td style='border-radius:0 8px 8px 0;padding:12px;'>\n            <button class='btn btn-sm' style='background:#667eea;color:white;border:none;border-radius:6px;' data-edit='${u.id}'>✏️ Edit</button>\n            <button class='btn btn-sm' style='background:#f59e0b;color:white;border:none;border-radius:6px;margin-left:4px;' data-reset='${u.id}' data-name='${u.full_name}'>🔐 Reset</button>\n            <button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${u.id}'>🗑️ Delete</button>\n          </td>\n        </tr>`;
       });
-      html += `</tbody></table>`;
+      html += `</tbody></table></div>`;
       list.innerHTML = html;
       
-      // wire edit and reset buttons
       document.querySelectorAll('button[data-edit]').forEach(btn=> btn.onclick = async ()=>{
         const id = btn.getAttribute('data-edit');
         const u = users.find(x=> x.id==id);
@@ -280,7 +267,6 @@
 
     // Departments UI
     async function refreshDepartments(){
-      // populate hod select with users
       const users = await (await fetch('/api/users')).json();
       const hodSelect = document.getElementById('deptHod'); hodSelect.innerHTML = '<option value="">(No HOD)</option>';
       users.forEach(u=>{ const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.full_name} (${u.email})`; hodSelect.appendChild(opt); });
@@ -288,8 +274,9 @@
       const deps = await (await fetch('/api/departments')).json();
       const container = document.getElementById('departmentsList'); container.innerHTML = '';
       deps.forEach(d=>{
-        const row = document.createElement('div'); row.className = 'd-flex align-items-center justify-content-between mb-2';
-        row.innerHTML = `<div><strong>${d.name}</strong><div class='small text-muted'>HOD: ${d.hod_name||'(none)'} ${d.hod_email?'<span class="text-muted">• '+d.hod_email+'</span>':''}</div></div><div><button class='btn btn-sm btn-outline-secondary me-1' data-edit='${d.id}'>Edit</button><button class='btn btn-sm btn-danger' data-delete='${d.id}'>Delete</button></div>`;
+        const row = document.createElement('div'); row.className = 'd-flex align-items-center justify-content-between';
+        row.style.cssText = 'padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid #667eea;margin-bottom:12px;';
+        row.innerHTML = `<div><strong style='font-size:16px;display:block;'>${d.name}</strong><div class='small text-muted'>👔 HOD: ${d.hod_name||'(none)'} ${d.hod_email?'<span class="text-muted">• '+d.hod_email+'</span>':''}</div></div><div><button class='btn btn-sm' style='background:#667eea;color:white;border:none;border-radius:6px;' data-edit='${d.id}'>✏️ Edit</button><button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${d.id}'>🗑️ Delete</button></div>`;
         container.appendChild(row);
       });
 
