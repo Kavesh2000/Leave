@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Leave Management System — Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+      .login-hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
+      .hero-content { text-align: center; max-width: 500px; }
+      .hero-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; text-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+      .hero-subtitle { font-size: 1.25rem; opacity: 0.95; margin-bottom: 2rem; font-weight: 300; }
+      .hero-features { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-top: 2.5rem; }
+      .feature { text-align: center; }
+      .feature-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+      .feature-text { font-size: 0.9rem; opacity: 0.9; }
+      .login-form { padding: 3rem 2rem; }
+      .login-card { border-radius: 20px; border: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
+      .form-label { font-weight: 600; color: #1a1a2e; margin-bottom: 0.5rem; }
+      .form-control { border-radius: 12px; border: 2px solid #e0e0e0; padding: 0.75rem 1rem; font-size: 1rem; transition: all 0.3s ease; }
+      .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+      .login-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 0; border-radius: 12px; padding: 0.85rem 1rem; font-weight: 600; font-size: 1rem; color: white; cursor: pointer; transition: all 0.3s ease; }
+      .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+      .login-btn:active { transform: translateY(0); }
+      .demo-hint { background: #f0f4ff; border-left: 4px solid #667eea; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem; color: #333; }
+      .demo-hint strong { color: #667eea; }
+      .header-title { text-align: center; margin-bottom: 1.5rem; }
+      .header-title h2 { color: #1a1a2e; font-weight: 800; font-size: 1.8rem; }
+      .header-title p { color: #666; font-size: 0.95rem; }
+      .theme-toggle { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.9); border: none; border-radius: 50px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 1.2rem; transition: all 0.3s ease; }
+      .theme-toggle:hover { background: white; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+      @media (max-width: 768px) {
+        .hero-title { font-size: 2rem; }
+        .hero-subtitle { font-size: 1rem; }
+        .login-form { padding: 2rem 1.5rem; }
+      }
+      .fade-in { animation: fadeIn 0.6s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+  </head>
+  <body>
+    <div class="d-flex" style="min-height: 100vh;">
+      <!-- Hero Section -->
+      <div class="login-hero d-none d-lg-flex w-50">
+        <div class="hero-content fade-in">
+          <div class="hero-title">Leave Management</div>
+          <div class="hero-subtitle">Streamline your leave requests with ease</div>
+          <div class="hero-features">
+            <div class="feature">
+              <div class="feature-icon">✓</div>
+              <div class="feature-text">Easy Requests</div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">👥</div>
+              <div class="feature-text">Team Management</div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">📊</div>
+              <div class="feature-text">Analytics</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login Section -->
+      <div class="w-100 w-lg-50 d-flex align-items-center justify-content-center" style="background: linear-gradient(180deg, #f5f7fb, #eef3fb);">
+        <div class="login-form fade-in" style="width: 100%; max-width: 420px;">
+          <div class="header-title">
+            <h2>Welcome Back</h2>
+            <p>Sign in to your account</p>
+          </div>
+          <div class="login-card p-4">
+            <form id="login">
+              <div class="demo-hint">
+                <strong>Demo Accounts:</strong><br>
+                Employee: emp@example.com<br>
+                HOD: hod@example.com<br>
+                Admin: admin@example.com<br>
+                <small>Password: password</small>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input class="form-control" name="email" type="email" placeholder="you@example.com" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input class="form-control" name="password" type="password" placeholder="••••••••" required>
+              </div>
+              <button type="submit" class="login-btn w-100">Sign In</button>
+            </form>
+          </div>
+          <div class="text-center mt-3" style="color: #666; font-size: 0.9rem;">
+            Demo system • No registration needed
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="themeToggle" class="theme-toggle">🌙</button>
+
+    <script>
+      document.getElementById('login').onsubmit = async e =>{
+        e.preventDefault();
+        const form = e.target;
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Signing in...';
+        btn.disabled = true;
+        try {
+          const res = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:form.email.value,password:form.password.value})});
+          const j = await res.json();
+          if(res.ok){
+            if(j.role==='employee') location.href='/employee.html';
+            else if(j.role==='HOD') location.href='/hod.html';
+            else location.href='/admin.html';
+          }else {
+            alert('Invalid credentials. Please try again.');
+            btn.textContent = originalText;
+            btn.disabled = false;
+          }
+        } catch(err) {
+          alert('Login error: '+err.message);
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      };
+      const themeToggle = document.getElementById('themeToggle');
+      function applyTheme(){
+        const isDark = localStorage.getItem('theme')==='dark';
+        if(isDark) {
+          document.body.classList.add('dark');
+          themeToggle.textContent = '☀️';
+        } else {
+          document.body.classList.remove('dark');
+          themeToggle.textContent = '🌙';
+        }
+      }
+      themeToggle.onclick = ()=>{
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('theme', isDark? 'dark':'light');
+        themeToggle.textContent = isDark? '☀️': '🌙';
+      };
+      applyTheme();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

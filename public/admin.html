@@ -1,0 +1,298 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin — Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-sm navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">🎯 Leave System — Admin</a>
+        <div class="d-flex gap-3">
+          <button id="themeToggle" class="btn btn-outline-light btn-sm" style="border-radius:8px">🌙</button>
+          <button id="logout" class="btn btn-outline-light btn-sm" style="border-radius:8px">Logout</button>
+        </div>
+      </div>
+    </nav>
+    <main class="container-fluid py-4">
+      <div class="row">
+        <aside class="col-md-3 mb-3">
+          <div class="card shadow-lg h-100" style="border-radius:16px;border:none;background:linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+            <div class="card-body p-3">
+              <div class="d-flex align-items-center mb-4 pb-3 border-bottom" style="border-color:#e0e0e0!important">
+                <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;margin-right:12px;font-size:24px;">👤</div>
+                <div>
+                  <div class="fw-bold" style="color:#333;font-size:16px;">Admin Panel</div>
+                  <div id="adminDept" class="text-muted small">System Manager</div>
+                </div>
+              </div>
+              <div class="list-group" style="border:none;gap:8px;display:flex;flex-direction:column;">
+                <button class="list-group-item list-group-item-action active" data-view="requests" style="border-radius:10px;border:none;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;font-weight:500;">📋 Requests</button>
+                <button class="list-group-item list-group-item-action" data-view="departments" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">🏢 Departments</button>
+                <button class="list-group-item list-group-item-action" data-view="createUser" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">➕ Create User</button>
+                <button class="list-group-item list-group-item-action" data-view="users" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">👥 Users</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <section class="col-md-9">
+          <div id="view-requests" class="view">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📋 Leave Requests</h5>
+                <ul id="requests" class="list-group" style="border:none;gap:12px;display:flex;flex-direction:column;"></ul>
+              </div>
+            </div>
+          </div>
+
+
+
+          <div id="view-createUser" class="view d-none">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">➕ Create New User</h5>
+                <form id="createUserForm">
+                  <div class="mb-3"><input class="form-control" placeholder="Full name" id="u_full_name" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="mb-3"><input class="form-control" placeholder="Email" id="u_email" type="email" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="mb-3"><input class="form-control" placeholder="Password" id="u_password" type="password" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="mb-3">
+                    <select id="u_role" class="form-select" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
+                      <option value="employee">👤 Employee</option>
+                      <option value="HOD">🎯 HOD</option>
+                      <option value="admin">🛡️ Admin</option>
+                    </select>
+                  </div>
+                  <div class="mb-3"><input class="form-control" placeholder="Department (optional)" id="u_department" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
+                  <div class="d-grid"><button class="btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:10px;padding:12px;font-weight:600;">✨ Create User</button></div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-departments" class="view d-none">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">🏢 Department Management</h5>
+                <div class="mb-3 d-flex gap-2">
+                  <input id="deptName" class="form-control" placeholder="Department name" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
+                  <select id="deptHod" class="form-select" style="width:320px;border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
+                    <option value="">(No HOD)</option>
+                  </select>
+                  <button id="createDept" class="btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:10px;padding:12px;font-weight:600;white-space:nowrap;">➕ Create</button>
+                </div>
+                <div id="departmentsList" style="display:grid;gap:12px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-users" class="view d-none">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">👥 User Management</h5>
+                <div id="usersList"></div>
+                <!-- Reset password modal -->
+                <div id="resetModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(2px)">
+                  <div class="d-flex vh-100 align-items-center justify-content-center">
+                    <div class="card p-3 modal-fade" style="width:420px">
+                      <h6>Reset password for <span id="resetName"></span></h6>
+                      <input id="resetPassword" class="form-control mb-2" placeholder="New password" type="password">
+                      <div class="d-flex justify-content-end gap-2"><button id="resetCancel" class="btn btn-outline-secondary">Cancel</button><button id="resetSubmit" class="btn btn-primary">Reset</button></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script>
+    async function load(){
+      try{ const me = await (await fetch('/api/me')).json(); if(me && me.department) document.getElementById('adminDept').textContent = me.department; }catch(e){}
+      bindSidebar();
+      await refreshRequests();
+      await refreshBalances();
+      await refreshUsers();
+      await refreshAnalytics();
+      showView('requests');
+    }
+
+    function bindSidebar(){
+      document.querySelectorAll('.list-group .list-group-item').forEach(btn=> btn.onclick = ()=>{
+        document.querySelectorAll('.list-group .list-group-item').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        showView(btn.getAttribute('data-view'));
+      });
+    }
+
+    function showView(name){
+      document.querySelectorAll('.view').forEach(v=> v.classList.add('d-none'));
+      const el = document.getElementById('view-' + name);
+      if(el) el.classList.remove('d-none');
+      if(name === 'analytics') refreshAnalytics();
+    }
+
+    async function refreshRequests(){
+      const r = await (await fetch('/api/leave_requests')).json(); const el=document.getElementById('requests'); el.innerHTML='';
+      r.forEach(x=>{
+        const li=document.createElement('li'); li.className='list-group-item';
+        const statusColor = x.status === 'pending' ? '#ff6b6b' : x.status === 'hod_approved' ? '#4ecdc4' : x.status === 'admin_approved' ? '#28a745' : '#95e1d3';
+        const statusText = x.status === 'pending' ? '⏳ Pending (with HOD)' : x.status === 'hod_approved' ? '✓ HOD Approved' : x.status === 'admin_approved' ? '✅ Approved' : '✗ Rejected';
+        const actionButtons = x.status === 'hod_approved' ? `<button class='btn btn-sm' style='background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);color:white;border:none;border-radius:8px;' data-id='${x.id}' data-act='approve'>✓ Approve</button><button class='btn btn-sm' style='background:linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);color:white;border:none;border-radius:8px;' data-id='${x.id}' data-act='reject'>✕ Reject</button>` : '';
+        li.innerHTML = `<div style='padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid ${statusColor};'><div class='d-flex justify-content-between align-items-start'><div><b style='font-size:16px;'>${x.full_name}</b><div class='small text-muted'>${x.leave_type} • ${x.start_date} → ${x.end_date} • <span style='background:#f0f0f0;padding:2px 8px;border-radius:4px;'>${x.days} days</span></div><div style='margin-top:8px;'><span style='background:${statusColor};color:white;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;'>${statusText}</span></div></div><div class='d-flex gap-2'>${actionButtons}</div></div></div>`;
+        el.appendChild(li);
+      });
+      document.querySelectorAll('button[data-id]').forEach(btn=>btn.onclick=async e=>{
+        const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); const comment = prompt('Comment')||'';
+        const res = await fetch('/api/leave_requests/'+id+'/admin_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:act,comment})});
+        if(res.ok) { await refreshRequests(); await refreshBalances(); } else alert(JSON.stringify(await res.json()));
+      });
+    }
+
+    async function refreshBalances(){
+      const b = await (await fetch('/api/balances')).json(); const be=document.getElementById('balances'); be.innerHTML='';
+      b.forEach(x=>{ const row=document.createElement('div'); row.className='mb-2 d-flex gap-2 align-items-center'; row.style.cssText='padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid #667eea;'; row.innerHTML = `<div class='flex-grow-1'><strong style='font-size:16px;'>${x.full_name}</strong><div class='text-muted small'>${x.leave_type}</div></div><input class='form-control form-control-sm' style='width:90px;border-radius:8px;border:none;background:#f0f0f0;' value='${x.remaining_days}' data-user='${x.user_id}' data-type='${x.leave_type_id}'/><button class='btn btn-sm' style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:8px;' data-save='${x.user_id}-${x.leave_type_id}'>Save</button>`; be.appendChild(row); });
+      document.querySelectorAll('button[data-save]').forEach(btn=>btn.onclick=async ()=>{ const key = btn.getAttribute('data-save'); const [u,t]=key.split('-'); const input = btn.previousElementSibling; const val = parseInt(input.value); const res = await fetch(`/api/balances/${u}/${t}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({remaining_days:val})}); if(res.ok) { await refreshBalances(); } else alert(JSON.stringify(await res.json())); });
+    }
+
+    async function refreshAnalytics(){
+      try{
+        const d = await (await fetch('/api/analytics/departments')).json();
+        const t = await (await fetch('/api/analytics/types')).json();
+        const deptLabels = d.map(r=> r.department || 'Unknown');
+        const deptData = d.map(r=> r.days || 0);
+        const typeLabels = t.map(r=> r.type);
+        const typeData = t.map(r=> r.days || 0);
+        if(window._deptChart) window._deptChart.destroy();
+        if(window._typeChart) window._typeChart.destroy();
+        const ctxD = document.getElementById('chart-dept').getContext('2d');
+        window._deptChart = new Chart(ctxD, {type:'bar', data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:['#667eea','#764ba2','#f093fb','#4facfe'], borderRadius:8, borderSkipped:false}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}, scales:{y:{beginAtZero:true,ticks:{font:{size:12}}}}}});
+        const ctxT = document.getElementById('chart-type').getContext('2d');
+        window._typeChart = new Chart(ctxT, {type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#667eea','#764ba2','#f093fb','#4facfe','#fa709a','#fee140'], borderWidth:3, borderColor:'#ffffff'}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}}});
+      }catch(e){ console.error(e); }
+    }
+
+    document.addEventListener('submit', async e =>{
+      if(e.target && e.target.id === 'createUserForm'){
+        e.preventDefault();
+        const full_name = document.getElementById('u_full_name').value;
+        const email = document.getElementById('u_email').value;
+        const password = document.getElementById('u_password').value;
+        const role = document.getElementById('u_role').value;
+        const department = document.getElementById('u_department').value || null;
+        const res = await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name,email,password,role,department})});
+        if(res.ok){ alert('User created'); e.target.reset(); await refreshUsers(); await refreshBalances(); } else alert(JSON.stringify(await res.json()));
+      }
+    });
+
+    // Reset password modal handlers
+    document.getElementById('resetCancel').onclick = ()=>{ document.querySelector('#resetModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('resetModal').classList.add('d-none'),220); };
+    document.getElementById('resetSubmit').onclick = async ()=>{
+      const id = document.getElementById('resetModal').dataset.userId; const pw = document.getElementById('resetPassword').value;
+      if(!pw){ alert('Enter a password'); return; }
+      const res = await fetch('/api/users/'+id+'/reset_password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+      if(res.ok){ showToast('Password reset'); document.getElementById('resetPassword').value=''; document.getElementById('resetCancel').click(); } else { const j=await res.json(); showToast('Error: '+(j.error||'')); }
+    };
+
+    async function refreshUsers(){
+      const users = await (await fetch('/api/users')).json();
+      const balances = await (await fetch('/api/balances')).json();
+      const depts = await (await fetch('/api/departments')).json();
+      const list = document.getElementById('usersList');
+      
+      const deptHodMap = {};
+      depts.forEach(d=> deptHodMap[d.name] = d.hod_name || '(none)');
+      
+      const userBalanceMap = {};
+      balances.forEach(b=>{
+        if(!userBalanceMap[b.user_id]) userBalanceMap[b.user_id] = {};
+        userBalanceMap[b.user_id][b.leave_type] = b.remaining_days;
+      });
+      
+      let html = `<div style='overflow-x:auto;'><table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>👤 Name</th><th style='padding:12px;font-weight:600;'>🏢 Department</th><th style='padding:12px;font-weight:600;'>👔 HOD</th><th style='padding:12px;font-weight:600;'>📅 Annual</th><th style='padding:12px;font-weight:600;'>🏥 Sick</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>⚙️ Actions</th></tr></thead><tbody>`;
+      users.forEach((u,idx)=>{
+        const annual = userBalanceMap[u.id]?.Annual || 0;
+        const sick = userBalanceMap[u.id]?.Sick || 0;
+        const hod = deptHodMap[u.department] || '—';
+        const bgColor = idx % 2 === 0 ? '#f8f9fa' : '#ffffff';
+        html += `<tr style='background:${bgColor};border-radius:12px;'>\n          <td style='border-radius:8px 0 0 8px;padding:12px;'><strong style='display:block;'>${u.full_name}</strong><div class='text-muted' style='font-size:12px;'>${u.email}</div></td>\n          <td style='padding:12px;'>${u.department || '—'}</td>\n          <td style='padding:12px;'>${hod}</td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${annual}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${sick}</span></td>\n          <td style='border-radius:0 8px 8px 0;padding:12px;'>\n            <button class='btn btn-sm' style='background:#667eea;color:white;border:none;border-radius:6px;' data-edit='${u.id}'>✏️ Edit</button>\n            <button class='btn btn-sm' style='background:#f59e0b;color:white;border:none;border-radius:6px;margin-left:4px;' data-reset='${u.id}' data-name='${u.full_name}'>🔐 Reset</button>\n            <button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${u.id}'>🗑️ Delete</button>\n          </td>\n        </tr>`;
+      });
+      html += `</tbody></table></div>`;
+      list.innerHTML = html;
+      
+      document.querySelectorAll('button[data-edit]').forEach(btn=> btn.onclick = async ()=>{
+        const id = btn.getAttribute('data-edit');
+        const u = users.find(x=> x.id==id);
+        const newDept = prompt('Department', u.department||'') || null;
+        const newRole = prompt('Role (employee/HOD/admin)', u.role) || u.role;
+        const newName = prompt('Full name', u.full_name) || u.full_name;
+        const res = await fetch('/api/users/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:newName, role:newRole, department:newDept})});
+        if(res.ok) { showToast('Updated'); await refreshUsers(); await refreshBalances(); } else showToast('Error');
+      });
+      document.querySelectorAll('button[data-reset]').forEach(btn=> btn.onclick = ()=>{
+        const id = btn.getAttribute('data-reset'); const name = btn.getAttribute('data-name');
+        document.getElementById('resetName').textContent = name; document.getElementById('resetModal').dataset.userId = id;
+        document.getElementById('resetModal').classList.remove('d-none'); setTimeout(()=> document.querySelector('#resetModal .modal-fade').classList.add('show'),10);
+      });
+      document.querySelectorAll('button[data-delete]').forEach(btn=> btn.onclick = async ()=>{
+        const id = btn.getAttribute('data-delete');
+        if(!confirm('Delete this user? This will remove their leaves and balances.')) return;
+        const res = await fetch('/api/users/'+id, { method: 'DELETE' });
+        if(res.ok){ showToast('User deleted'); await refreshUsers(); await refreshBalances(); } else { showToast('Error deleting'); }
+      });
+    }
+
+    // Departments UI
+    async function refreshDepartments(){
+      const users = await (await fetch('/api/users')).json();
+      const hodSelect = document.getElementById('deptHod'); hodSelect.innerHTML = '<option value="">(No HOD)</option>';
+      users.forEach(u=>{ const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.full_name} (${u.email})`; hodSelect.appendChild(opt); });
+
+      const deps = await (await fetch('/api/departments')).json();
+      const container = document.getElementById('departmentsList'); container.innerHTML = '';
+      deps.forEach(d=>{
+        const row = document.createElement('div'); row.className = 'd-flex align-items-center justify-content-between';
+        row.style.cssText = 'padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid #667eea;margin-bottom:12px;';
+        row.innerHTML = `<div><strong style='font-size:16px;display:block;'>${d.name}</strong><div class='small text-muted'>👔 HOD: ${d.hod_name||'(none)'} ${d.hod_email?'<span class="text-muted">• '+d.hod_email+'</span>':''}</div></div><div><button class='btn btn-sm' style='background:#667eea;color:white;border:none;border-radius:6px;' data-edit='${d.id}'>✏️ Edit</button><button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${d.id}'>🗑️ Delete</button></div>`;
+        container.appendChild(row);
+      });
+
+      document.getElementById('createDept').onclick = async ()=>{
+        const name = document.getElementById('deptName').value.trim(); const hod = document.getElementById('deptHod').value || null;
+        if(!name) return alert('Enter department name');
+        const res = await fetch('/api/departments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name, hod_user_id: hod || null})});
+        if(res.ok){ document.getElementById('deptName').value=''; await refreshDepartments(); await refreshUsers(); } else alert(JSON.stringify(await res.json()));
+      };
+
+      document.querySelectorAll('button[data-edit]').forEach(btn=> btn.onclick = async ()=>{
+        const id = btn.getAttribute('data-edit');
+        const d = deps.find(x=> x.id==id);
+        const newName = prompt('Department name', d.name) || d.name;
+        const hod = prompt('HOD user id (empty to clear)', d.hod_user_id||'') || null;
+        const payload = { name: newName, hod_user_id: hod || null };
+        const res = await fetch('/api/departments/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        if(res.ok) { await refreshDepartments(); await refreshUsers(); } else alert(JSON.stringify(await res.json()));
+      });
+
+      document.querySelectorAll('button[data-delete]').forEach(btn=> btn.onclick = async ()=>{
+        const id = btn.getAttribute('data-delete'); if(!confirm('Delete this department?')) return;
+        const res = await fetch('/api/departments/'+id, { method: 'DELETE' });
+        if(res.ok){ showToast('Department deleted'); await refreshDepartments(); await refreshUsers(); } else { alert(JSON.stringify(await res.json())); }
+      });
+    }
+
+    // Theme toggle
+    function applyTheme(){ if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark'); }
+    const themeBtn = document.getElementById('themeToggle'); if(themeBtn) themeBtn.onclick = ()=>{ const isDark = document.body.classList.toggle('dark'); localStorage.setItem('theme', isDark? 'dark':'light'); };
+    applyTheme();
+
+    document.getElementById('logout').onclick = async ()=>{ await fetch('/api/logout',{method:'POST'}); location.href='/'; };
+    load();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
