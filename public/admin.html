@@ -217,12 +217,44 @@
     };
 
     async function refreshUsers(){
-      const users = await (await fetch('/api/users')).json(); const list = document.getElementById('usersList'); list.innerHTML='';
-      users.forEach(u=>{
-        const row = document.createElement('div'); row.className='d-flex justify-content-between align-items-center mb-2';
-        row.innerHTML = `<div><strong>${u.full_name}</strong><div class='small text-muted'>${u.email} • ${u.department||''} • ${u.role}</div></div><div><button class='btn btn-sm btn-outline-secondary me-1' data-edit='${u.id}'>Edit</button><button class='btn btn-sm btn-outline-danger me-1' data-reset='${u.id}' data-name='${u.full_name}'>Reset PW</button><button class='btn btn-sm btn-danger' data-delete='${u.id}'>Delete</button></div>`;
-        list.appendChild(row);
+      const users = await (await fetch('/api/users')).json();
+      const balances = await (await fetch('/api/balances')).json();
+      const depts = await (await fetch('/api/departments')).json();
+      const list = document.getElementById('usersList');
+      
+      // Build map: department name -> HOD name
+      const deptHodMap = {};
+      depts.forEach(d=> deptHodMap[d.name] = d.hod_name || '(none)');
+      
+      // Build map: user_id -> {annual, sick}
+      const userBalanceMap = {};
+      balances.forEach(b=>{
+        if(!userBalanceMap[b.user_id]) userBalanceMap[b.user_id] = {};
+        userBalanceMap[b.user_id][b.leave_type] = b.remaining_days;
       });
+      
+      // Create table
+      let html = `<table class='table table-sm table-hover'><thead><tr><th>Name</th><th>Department</th><th>HOD</th><th>Annual</th><th>Sick</th><th>Actions</th></tr></thead><tbody>`;
+      users.forEach(u=>{
+        const annual = userBalanceMap[u.id]?.Annual || 0;
+        const sick = userBalanceMap[u.id]?.Sick || 0;
+        const hod = deptHodMap[u.department] || '—';
+        html += `<tr>
+          <td><strong>${u.full_name}</strong><div class='text-muted small'>${u.email}</div></td>
+          <td>${u.department || '—'}</td>
+          <td>${hod}</td>
+          <td>${annual}</td>
+          <td>${sick}</td>
+          <td>
+            <button class='btn btn-sm btn-outline-secondary me-1' data-edit='${u.id}'>Edit</button>
+            <button class='btn btn-sm btn-outline-warning me-1' data-reset='${u.id}' data-name='${u.full_name}'>Reset PW</button>
+            <button class='btn btn-sm btn-danger' data-delete='${u.id}'>Delete</button>
+          </td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      list.innerHTML = html;
+      
       // wire edit and reset buttons
       document.querySelectorAll('button[data-edit]').forEach(btn=> btn.onclick = async ()=>{
         const id = btn.getAttribute('data-edit');
