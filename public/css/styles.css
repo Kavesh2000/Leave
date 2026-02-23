@@ -99,4 +99,52 @@ body.dark{
 	--text-color: #e6eef8;
 }
 
+body.dark .login-hero {
+  background: linear-gradient(135deg, #5a67d8 0%, #5a4a7f 100%);
+}
+
+body.dark .form-control {
+  background: #1a1a2e;
+  border-color: #333;
+  color: #e6eef8;
+}
+
+body.dark .form-control:focus {
+  background: #1a1a2e;
+  border-color: #8b5cf6;
+  color: #e6eef8;
+}
+
+body.dark .form-label {
+  color: #e6eef8;
+}
+
+body.dark .login-btn {
+  background: linear-gradient(135deg, #5a67d8 0%, #5a4a7f 100%);
+}
+
+body.dark .header-title h2 {
+  color: #e6eef8;
+}
+
+body.dark .header-title p {
+  color: #94a3b8;
+}
+
+body.dark .demo-hint {
+  background: #1a1a2e;
+  border-left-color: #8b5cf6;
+  color: #e6eef8;
+}
+
+body.dark .demo-hint strong {
+  color: #8b5cf6;
+}
+
+body.dark .theme-toggle {
+  background: rgba(20, 20, 40, 0.9);
+  color: #e6eef8;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
 
