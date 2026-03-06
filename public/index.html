@@ -3,95 +3,277 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>Leave Management System — Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
     <style>
-      .login-hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; }
-      .hero-content { text-align: center; max-width: 500px; }
-      .hero-title { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; text-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-      .hero-subtitle { font-size: 1.25rem; opacity: 0.95; margin-bottom: 2rem; font-weight: 300; }
-      .hero-features { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-top: 2.5rem; }
-      .feature { text-align: center; }
-      .feature-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-      .feature-text { font-size: 0.9rem; opacity: 0.9; }
-      .login-form { padding: 3rem 2rem; }
-      .login-card { border-radius: 20px; border: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
-      .form-label { font-weight: 600; color: #1a1a2e; margin-bottom: 0.5rem; }
-      .form-control { border-radius: 12px; border: 2px solid #e0e0e0; padding: 0.75rem 1rem; font-size: 1rem; transition: all 0.3s ease; }
-      .form-control:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-      .login-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: 0; border-radius: 12px; padding: 0.85rem 1rem; font-weight: 600; font-size: 1rem; color: white; cursor: pointer; transition: all 0.3s ease; }
-      .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
-      .login-btn:active { transform: translateY(0); }
-      .demo-hint { background: #f0f4ff; border-left: 4px solid #667eea; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem; color: #333; }
-      .demo-hint strong { color: #667eea; }
-      .header-title { text-align: center; margin-bottom: 1.5rem; }
-      .header-title h2 { color: #1a1a2e; font-weight: 800; font-size: 1.8rem; }
-      .header-title p { color: #666; font-size: 0.95rem; }
-      .theme-toggle { position: fixed; top: 20px; right: 20px; background: rgba(255,255,255,0.9); border: none; border-radius: 50px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 1.2rem; transition: all 0.3s ease; }
-      .theme-toggle:hover { background: white; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-      @media (max-width: 768px) {
-        .hero-title { font-size: 2rem; }
-        .hero-subtitle { font-size: 1rem; }
-        .login-form { padding: 2rem 1.5rem; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Segoe UI', Tahoma, Geneva, sans-serif; overflow: hidden; }
+      
+      .login-container { 
+        min-height: 100vh; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #2d1a2e 0%, #4a2454 25%, #8B3A62 50%, #C94C6D 75%, #2d1a2e 100%);
+        position: relative;
+        overflow: hidden;
       }
-      .fade-in { animation: fadeIn 0.6s ease-out; }
-      @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+      /* Animated background elements */
+      .bg-blob {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.08;
+        animation: float 15s ease-in-out infinite;
+      }
+      .blob-1 { width: 400px; height: 400px; background: #E91E63; top: -100px; left: -100px; animation-delay: 0s; }
+      .blob-2 { width: 300px; height: 300px; background: #C94C6D; bottom: -50px; right: -50px; animation-delay: 5s; }
+      .blob-3 { width: 350px; height: 350px; background: #E91E63; top: 50%; right: 10%; animation-delay: 10s; }
+      
+      @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(30px); } }
+
+      .left-panel {
+        display: none;
+        width: 50%;
+        background: linear-gradient(135deg, rgba(139, 46, 46, 0.8) 0%, rgba(165, 42, 42, 0.8) 100%);
+        color: white;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      .left-panel.active { display: none; }
+
+      .panel-content {
+        text-align: center;
+        animation: slideInLeft 0.8s ease-out;
+      }
+
+      .panel-logo {
+        width: 80px;
+        height: 80px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin: 0 auto 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+      }
+
+      .panel-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+      }
+
+      .panel-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 3rem;
+        font-weight: 300;
+      }
+
+      .right-panel {
+        width: 100%;
+        max-width: 450px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        position: relative;
+        z-index: 2;
+      }
+
+      @media (min-width: 992px) {
+        .right-panel { width: auto; max-width: 450px; }
+        .left-panel { display: none; }
+      }
+
+      .login-card-wrapper {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      .login-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+        animation: slideInUp 0.8s ease-out;
+      }
+
+      .login-header h1 {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        filter: drop-shadow(-2px -2px 3px rgba(0,0,0,0.3)) drop-shadow(2px 2px 3px rgba(0,0,0,0.3)) drop-shadow(0px 4px 8px rgba(0,0,0,0.4));
+        transform: perspective(800px) rotateX(5deg);
+      }
+
+      .login-header p {
+        color: rgba(255,255,255,0.7);
+        font-size: 0.95rem;
+      }
+
+      .login-form-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.5) inset;
+        backdrop-filter: blur(10px);
+        animation: slideInUp 0.8s ease-out 0.1s both;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        display: block;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.6rem;
+        font-size: 0.95rem;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.9rem 1.1rem;
+        border: 2px solid #E91E63;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        background: #FFF0F5;
+      }
+
+      .form-control:focus {
+        outline: none;
+        border-color: #E91E63;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(233, 30, 99, 0.1);
+      }
+
+      .form-control::placeholder {
+        color: #E91E63;
+      }
+
+      .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(233, 30, 99, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 35px rgba(233, 30, 99, 0.6);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      .submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      .footer-text {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: rgba(255,255,255,0.6);
+        font-size: 0.85rem;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 25px;
+        right: 25px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50px;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        z-index: 10;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      @keyframes slideInLeft { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+      @keyframes slideInUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+
+      @media (max-width: 991px) {
+        .left-panel { width: 100%; }
+        .right-panel { width: 100%; }
+        .login-form-card { padding: 2rem; }
+        .login-header h1 { font-size: 1.5rem; }
+        .panel-title { font-size: 2rem; }
+      }
     </style>
   </head>
   <body>
-    <div class="d-flex" style="min-height: 100vh;">
-      <!-- Hero Section -->
-      <div class="login-hero d-none d-lg-flex w-50">
-        <div class="hero-content fade-in">
-          <div class="hero-title">Leave Management</div>
-          <div class="hero-subtitle">Streamline your leave requests with ease</div>
-          <div class="hero-features">
-            <div class="feature">
-              <div class="feature-icon">✓</div>
-              <div class="feature-text">Easy Requests</div>
-            </div>
-            <div class="feature">
-              <div class="feature-icon">👥</div>
-              <div class="feature-text">Team Management</div>
-            </div>
-            <div class="feature">
-              <div class="feature-icon">📊</div>
-              <div class="feature-text">Analytics</div>
-            </div>
-          </div>
+    <div class="login-container">
+      <div class="bg-blob blob-1"></div>
+      <div class="bg-blob blob-2"></div>
+      <div class="bg-blob blob-3"></div>
+
+      <!-- Left Panel -->
+      <div class="left-panel active">
+        <div class="panel-content">
         </div>
       </div>
 
-      <!-- Login Section -->
-      <div class="w-100 w-lg-50 d-flex align-items-center justify-content-center" style="background: linear-gradient(180deg, #f5f7fb, #eef3fb);">
-        <div class="login-form fade-in" style="width: 100%; max-width: 420px;">
-          <div class="header-title">
-            <h2>Welcome Back</h2>
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <div class="login-card-wrapper">
+          <div class="login-header">
+            <h1>Welcome back to ONIT MFB</h1>
             <p>Sign in to your account</p>
           </div>
-          <div class="login-card p-4">
+          <div class="login-form-card">
             <form id="login">
-              <div class="demo-hint">
-                <strong>Demo Accounts:</strong><br>
-                Employee: emp@example.com<br>
-                HOD: hod@example.com<br>
-                Admin: admin@example.com<br>
-                <small>Password: password</small>
-              </div>
-              <div class="mb-3">
+              <div class="form-group">
                 <label class="form-label">Email Address</label>
                 <input class="form-control" name="email" type="email" placeholder="you@example.com" required>
               </div>
-              <div class="mb-3">
+              <div class="form-group">
                 <label class="form-label">Password</label>
                 <input class="form-control" name="password" type="password" placeholder="••••••••" required>
               </div>
-              <button type="submit" class="login-btn w-100">Sign In</button>
+              <button type="submit" class="submit-btn">Sign In</button>
             </form>
           </div>
-          <div class="text-center mt-3" style="color: #666; font-size: 0.9rem;">
-            Demo system • No registration needed
+          <div class="footer-text">
+            Modern Leave Management System
           </div>
         </div>
       </div>

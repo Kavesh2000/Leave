@@ -3,58 +3,320 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>HOD — Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
   </head>
-  <body class="bg-light">
-    <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+  <body style="background:#0f1419;color:#e6eef8;">
+    <nav class="navbar navbar-expand-sm" style="background:linear-gradient(90deg,#0f172a 0%,#1a2a4a 100%);border-bottom:2px solid #10b981;box-shadow:0 4px 20px rgba(16,185,129,0.15);">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">Leave System — HOD</a>
-        <div class="d-flex">
-          <button id="themeToggle" class="btn btn-outline-light btn-sm me-2">Theme</button>
-          <button id="logout" class="btn btn-outline-light btn-sm">Logout</button>
+        <a class="navbar-brand" href="#" id="navbarBrand" style="color:white;font-weight:700;">Welcome back,</a>
+        <div class="d-flex gap-3 align-items-center">
+          <div style="color:#a0c9a8;font-size:13px;text-align:right;">
+            <div id="userName" style="font-weight:600;color:#10b981;">-</div>
+            <div id="userDept" style="font-size:12px;color:#7dd9e8;">-</div>
+          </div>
+          <button id="logout" class="btn" style="background:#ef4444;color:#fff;border:0;border-radius:6px;padding:6px 12px;font-weight:500;">Logout</button>
         </div>
       </div>
     </nav>
 
-    <main class="container py-4">
-      <div class="row gy-3">
-        <div class="col-12">
-          <h4>Approval Queue</h4>
+    <main class="container-fluid py-4">
+      <!-- Tab Navigation -->
+      <div class="mb-4" style="display:flex;gap:1rem;border-bottom:2px solid #2a4a5a;padding-bottom:1rem;">
+        <button id="tabQueue" class="tab-btn" data-tab="queue" style="background:none;border:none;color:#10b981;font-weight:600;cursor:pointer;padding:0.5rem 1rem;border-bottom:3px solid #10b981;font-size:0.95rem;">⏳ Approval Queue</button>
+        <button id="tabRecords" class="tab-btn" data-tab="records" style="background:none;border:none;color:#888;font-weight:600;cursor:pointer;padding:0.5rem 1rem;border-bottom:3px solid transparent;font-size:0.95rem;">📊 Department Records</button>
+        <button id="tabAllRequests" class="tab-btn" data-tab="allrequests" style="background:none;border:none;color:#888;font-weight:600;cursor:pointer;padding:0.5rem 1rem;border-bottom:3px solid transparent;font-size:0.95rem;">📋 All Leave Requests</button>
+      </div>
+
+      <!-- Approval Queue Tab -->
+      <div id="queueContent" class="tab-content">
+        <div class="row gy-3" style="justify-content: flex-start;">
+          <div class="col-12">
+            <h4 style="background:linear-gradient(90deg,#06b6d4,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;">⏳ Approval Queue</h4>
+          </div>
+          <div id="cards" class="col-12 d-flex flex-wrap" style="gap:1rem;justify-content:flex-start;align-items:flex-start;"></div>
         </div>
-        <div id="cards" class="col-12 d-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem"></div>
+      </div>
+
+      <!-- Employee Records Tab -->
+      <div id="recordsContent" class="tab-content" style="display:none;">
+        <div class="row gy-3">
+          <div class="col-12">
+            <h4 style="color:#10b981;font-weight:700;">📊 Department Employee Records</h4>
+          </div>
+          <div class="col-12">
+            <div style="overflow-x:auto;">
+              <table class="w-100" style="border-collapse:collapse;">
+                <thead>
+                  <tr style="background:linear-gradient(135deg,#1a2a3f,#0f1a28);border-bottom:2px solid #10b981;">
+                    <th style="padding:1rem;text-align:left;color:#10b981;font-weight:700;">Employee Name</th>
+                    <th style="padding:1rem;text-align:left;color:#10b981;font-weight:700;">Email</th>
+                    <th style="padding:1rem;text-align:center;color:#10b981;font-weight:700;">Leave Balances</th>
+                  </tr>
+                </thead>
+                <tbody id="employeeTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- All Leave Requests Tab -->
+      <div id="allrequestsContent" class="tab-content" style="display:none;">
+        <div class="row gy-3">
+          <div class="col-12">
+            <h4 style="color:#10b981;font-weight:700;">📋 All Leave Requests</h4>
+          </div>
+          <div class="col-12">
+            <div style="overflow-x:auto;">
+              <table class="w-100" style="border-collapse:collapse;">
+                <thead>
+                  <tr style="background:linear-gradient(135deg,#1a2a3f,#0f1a28);border-bottom:2px solid #10b981;">
+                    <th style="padding:1rem;text-align:left;color:#10b981;font-weight:700;">Employee</th>
+                    <th style="padding:1rem;text-align:left;color:#10b981;font-weight:700;">Leave Type</th>
+                    <th style="padding:1rem;text-align:center;color:#10b981;font-weight:700;">Days</th>
+                    <th style="padding:1rem;text-align:left;color:#10b981;font-weight:700;">Period</th>
+                    <th style="padding:1rem;text-align:center;color:#10b981;font-weight:700;">Status</th>
+                    <th style="padding:1rem;text-align:left;color:#10b981;font-weight:700;">Reason</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsTableBody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 
     <!-- comment modal -->
-    <div id="commentModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1100;backdrop-filter:blur(2px)">
+    <div id="commentModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1100;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
       <div class="d-flex vh-100 align-items-center justify-content-center">
-        <div class="card p-3 shadow-lg modal-fade" style="width:480px">
-          <h5 id="commentTitle">Add comment</h5>
-          <textarea id="commentText" class="form-control" rows="4"></textarea>
-          <div class="d-flex justify-content-end gap-2 mt-2">
-            <button id="commentCancel" class="btn btn-outline-secondary">Cancel</button>
-            <button id="commentSubmit" class="btn btn-primary">Submit</button>
+        <div class="card p-3 shadow-lg modal-fade" style="width:480px;background:linear-gradient(135deg,#1a2a3f,#0f1a28);border:1px solid #2a4a5f;">
+          <h5 id="commentTitle" style="color:#10b981;font-weight:700;margin-bottom:1rem;">Add comment</h5>
+          <textarea id="commentText" class="form-control" rows="4" style="background:#0f1a25;border:1px solid #2a4a5a;color:#e6eef8;border-radius:6px;"></textarea>
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button id="commentCancel" class="btn" style="background:#2a3a4a;color:#e6eef8;border:1px solid #3a5a6a;border-radius:6px;padding:8px 16px;">Cancel</button>
+            <button id="commentSubmit" class="btn" style="background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;border:0;border-radius:6px;padding:8px 16px;font-weight:600;">Submit</button>
           </div>
         </div>
       </div>
     </div>
 
     <script>
-    function showToast(msg){ const wrap = document.querySelector('.toast-wrap') || (function(){ const d=document.createElement('div'); d.className='toast-wrap'; document.body.appendChild(d); return d; })(); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; wrap.appendChild(t); setTimeout(()=> t.remove(),3500); }
+    function showToast(msg){ const wrap = document.querySelector('.toast-wrap') || (function(){ const d=document.createElement('div'); d.className='toast-wrap'; document.body.appendChild(d); return d; })(); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; t.style.cssText='background:linear-gradient(135deg,#1a2a3a,#0f1a25);color:#10b981;padding:0.8rem 1.2rem;border-radius:8px;box-shadow:0 8px 24px rgba(16,185,129,0.2);border-left:4px solid #10b981;font-weight:600;'; wrap.appendChild(t); setTimeout(()=> t.remove(),3500); }
+    
     let currentAction = null;
-    async function load(){ refresh(); }
+    
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        const tab = btn.getAttribute('data-tab');
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        // Show selected tab
+        document.getElementById(tab + 'Content').style.display = 'block';
+        // Update button styles
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          if(b === btn) {
+            b.style.color = '#10b981';
+            b.style.borderBottomColor = '#10b981';
+          } else {
+            b.style.color = '#888';
+            b.style.borderBottomColor = 'transparent';
+          }
+        });
+        // Load tab data
+        if(tab === 'records') loadEmployeeRecords();
+        if(tab === 'allrequests') loadAllRequests();
+      };
+    });
+    
+    async function loadEmployeeRecords() {
+      try {
+        const res = await fetch('/api/department/employees');
+        const employees = await res.json();
+        const tbody = document.getElementById('employeeTableBody');
+        tbody.innerHTML = '';
+        
+        if(employees.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" style="padding:2rem;text-align:center;color:#888;">No employees in your department</td></tr>';
+          return;
+        }
+        
+        employees.forEach(emp => {
+          const balancesHtml = Object.entries(emp.leave_balances)
+            .map(([type, days]) => `<span style="background:#1a3a4a;color:#14b8a6;padding:0.4rem 0.8rem;border-radius:4px;margin:0.2rem;display:inline-block;font-size:0.85rem;"><strong>${type}:</strong> ${days} days</span>`)
+            .join('');
+          
+          const row = `
+            <tr style="border-bottom:1px solid #1a3a4a;background:#0f1a25;">
+              <td style="padding:1rem;color:#e6eef8;"><strong>${emp.full_name}</strong></td>
+              <td style="padding:1rem;color:#888;font-size:0.9rem;">${emp.email}</td>
+              <td style="padding:1rem;text-align:center;">${balancesHtml || '<span style="color:#888;">No leave types</span>'}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch(err) {
+        showToast('Error loading employee records');
+      }
+    }
+    
+    async function loadAllRequests() {
+      try {
+        const res = await fetch('/api/department/leave-records');
+        const requests = await res.json();
+        const tbody = document.getElementById('requestsTableBody');
+        tbody.innerHTML = '';
+        
+        if(requests.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#888;">No leave requests in your department</td></tr>';
+          return;
+        }
+        
+        const getStatusColor = (status) => {
+          if(status === 'pending') return '#ffc107';
+          if(status === 'hod_approved') return '#6366f1';
+          if(status === 'admin_approved') return '#10b981';
+          if(status === 'rejected') return '#dc3545';
+          return '#888';
+        };
+        
+        const getStatusText = (status) => {
+          if(status === 'pending') return '⏳ Pending';
+          if(status === 'hod_approved') return '✓ HOD Approved';
+          if(status === 'admin_approved') return '✅ APPROVED';
+          if(status === 'rejected') return '✗ Rejected';
+          return status;
+        };
+        
+        requests.forEach(req => {
+          const row = `
+            <tr style="border-bottom:1px solid #1a3a4a;background:#0f1a25;">
+              <td style="padding:1rem;color:#e6eef8;"><strong>${req.full_name}</strong></td>
+              <td style="padding:1rem;color:#e6eef8;">${req.leave_type}</td>
+              <td style="padding:1rem;text-align:center;color:#14b8a6;font-weight:600;">${req.days}</td>
+              <td style="padding:1rem;color:#888;font-size:0.9rem;">${req.start_date} → ${req.end_date}</td>
+              <td style="padding:1rem;text-align:center;"><span style="background:${getStatusColor(req.status)};color:white;padding:0.4rem 0.8rem;border-radius:4px;font-size:0.85rem;font-weight:600;">${getStatusText(req.status)}</span></td>
+              <td style="padding:1rem;color:#888;font-size:0.9rem;max-width:300px;white-space:pre-wrap;">${req.reason || '-'}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch(err) {
+        showToast('Error loading leave records');
+      }
+    }
+    
+    async function load(){ 
+      // Load user info
+      try {
+        const me = await (await fetch('/api/me')).json();
+        if(me && me.full_name) {
+          document.getElementById('userName').textContent = me.full_name;
+          document.getElementById('userDept').textContent = me.department || 'No Department';
+          
+          // Extract surname (last word) from full name
+          const nameParts = me.full_name.trim().split(/\s+/);
+          const surname = nameParts.length > 1 ? nameParts[nameParts.length - 1] : me.full_name;
+          document.getElementById('navbarBrand').textContent = 'Welcome back, ' + surname;
+        }
+      } catch(e) { console.error(e); }
+      
+      // Force navbar welcome text to white
+      document.getElementById('navbarBrand').style.color = '#ffffff';
+      
+      refresh(); 
+    }
     async function refresh(){
       const r = await (await fetch('/api/leave_requests')).json(); const container=document.getElementById('cards'); container.innerHTML='';
-      r.forEach(x=>{
-        const div = document.createElement('div'); div.className='card p-3 hover-scale';
-        const statusColor = x.status === 'pending' ? '#ffc107' : x.status === 'hod_approved' ? '#28a745' : '#dc3545';
-        const statusText = x.status === 'pending' ? '⏳ Pending' : x.status === 'hod_approved' ? '✓ Approved' : '✗ Rejected';
-        const actionButtons = x.status === 'pending' ? `<button class='btn btn-sm btn-success' data-id='${x.id}' data-act='approve'>Approve</button><button class='btn btn-sm btn-danger' data-id='${x.id}' data-act='reject'>Reject</button>` : '';
-        div.innerHTML = `<div class='d-flex justify-content-between'><div><strong>${x.full_name}</strong><div class='small text-muted'>${x.department || ''}</div></div><div class='text-end'><div class='small text-muted'>${x.leave_type}</div><div class='h5'>${x.days} days</div></div></div><div class='mt-2'><div class='text-muted small'>${x.start_date} → ${x.end_date}</div><div class='mt-2'><span style='background:${statusColor};color:white;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;'>${statusText}</span></div></div><div class='mt-3 d-flex gap-2 justify-content-end'>${actionButtons}</div>`;
-        container.appendChild(div);
-      });
+      // Filter to show pending first, then others for context
+      const pending = r.filter(x => x.status === 'pending');
+      const other = r.filter(x => x.status !== 'pending');
+      
+      // Show pending requests section
+        if(pending.length > 0) {
+        // make container act as timeline
+        container.style.position = 'relative';
+        // add vertical line (only once)
+        if(!document.getElementById('approvalLine')){
+          const vline = document.createElement('div');
+          vline.id = 'approvalLine';
+          vline.style.cssText = 'position:absolute;left:28px;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#06b6d4,#0ea5e9);border-radius:4px;opacity:0.95;';
+          container.appendChild(vline);
+        }
+
+        const header = document.createElement('div');
+        header.className = 'w-100';
+        header.innerHTML = '<h6 style="background:linear-gradient(90deg,#06b6d4,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;margin-top:1rem;margin-bottom:0.5rem;">⏳ PENDING (Action Required)</h6>';
+        container.appendChild(header);
+
+        pending.forEach(x=>{
+          const item = document.createElement('div');
+          item.style.cssText = 'display:flex;gap:12px;align-items:flex-start;margin-bottom:1rem;margin-left:48px;';
+
+          const marker = document.createElement('div');
+          marker.style.cssText = 'width:14px;height:14px;border-radius:50%;background:#06b6d4;border:3px solid #0f1419;box-shadow:0 8px 20px rgba(6,182,212,0.15);margin-top:6px;';
+
+          const content = document.createElement('div');
+          content.style.cssText = 'color:#e6eef8;max-width:820px;';
+          content.innerHTML = `<div style="font-weight:700;color:#e6eef8;">${x.full_name}</div><div style="color:#9fbfc4;font-size:0.92rem;margin-top:4px;">${x.leave_type} • ${x.days} days${x.department ? ' • ' + x.department : ''}</div><div style="color:#9fbfc4;font-size:0.9rem;margin-top:6px;">📅 ${x.start_date} → ${x.end_date}</div><div style="color:#9fbfc4;font-size:0.9rem;margin-top:6px;">Reason: ${x.reason || 'N/A'}</div>`;
+
+          const actions = document.createElement('div');
+          actions.style.cssText = 'margin-left:auto;display:flex;gap:8px;align-items:center;';
+          const approveBtn = document.createElement('button');
+          approveBtn.className = 'btn btn-sm';
+          approveBtn.textContent = '✓';
+          approveBtn.dataset.id = x.id;
+          approveBtn.dataset.act = 'approve';
+          approveBtn.style.cssText = 'background:linear-gradient(135deg,#064e3b,#0f766e);color:white;border:0;border-radius:6px;padding:6px 10px;font-weight:700;';
+          const rejectBtn = document.createElement('button');
+          rejectBtn.className = 'btn btn-sm';
+          rejectBtn.textContent = '✕';
+          rejectBtn.dataset.id = x.id;
+          rejectBtn.dataset.act = 'reject';
+          rejectBtn.style.cssText = 'background:linear-gradient(135deg,#7f1d1d,#b91c1c);color:white;border:0;border-radius:6px;padding:6px 10px;font-weight:700;';
+          actions.appendChild(approveBtn);
+          actions.appendChild(rejectBtn);
+
+          item.appendChild(marker);
+          item.appendChild(content);
+          item.appendChild(actions);
+
+          // wire actions
+          approveBtn.onclick = async () => { currentAction = { id: approveBtn.dataset.id, act: 'approve' }; document.getElementById('commentTitle').textContent = 'Approve with comment (optional)'; document.getElementById('commentText').value=''; document.getElementById('commentModal').classList.remove('d-none'); setTimeout(()=> document.querySelector('.modal-fade').classList.add('show'),10); };
+          rejectBtn.onclick = async () => { currentAction = { id: rejectBtn.dataset.id, act: 'reject' }; document.getElementById('commentTitle').textContent = 'Reject with comment'; document.getElementById('commentText').value=''; document.getElementById('commentModal').classList.remove('d-none'); setTimeout(()=> document.querySelector('.modal-fade').classList.add('show'),10); };
+
+          container.appendChild(item);
+        });
+      } else {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.className = 'w-100 text-center text-muted';
+        emptyMsg.innerHTML = '<p>No pending requests awaiting your approval</p>';
+        container.appendChild(emptyMsg);
+      }
+      
+      // Show history section
+      if(other.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'w-100';
+        header.innerHTML = '<h6 style="color:#6c757d;margin-top:2rem;margin-bottom:0.5rem;">📋 HISTORY</h6>';
+        container.appendChild(header);
+        
+        other.forEach(x=>{
+          const div = document.createElement('div'); div.className='card p-3 hover-scale';
+          div.style.opacity = '0.7';
+          const statusColor = x.status === 'hod_approved' ? '#28a745' : '#dc3545';
+          const statusText = x.status === 'hod_approved' ? '✓ You Approved' : '✗ You Rejected';
+          div.innerHTML = `<div class='d-flex justify-content-between'><div><strong>${x.full_name}</strong><div class='small text-muted'>${x.department || ''}</div></div><div class='text-end'><div class='small text-muted'>${x.leave_type}</div><div class='h5'>${x.days} days</div></div></div><div class='mt-2'><div class='text-muted small'>${x.start_date} → ${x.end_date}</div><div class='mt-2'><span style='background:${statusColor};color:white;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;'>${statusText}</span></div></div>`;
+          container.appendChild(div);
+        });
+      }
+      
       document.querySelectorAll('button[data-id]').forEach(btn=>btn.onclick=async e=>{
         const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
         currentAction = {id, act};
@@ -69,15 +331,30 @@
       const comment = document.getElementById('commentText').value || '';
       const {id, act} = currentAction || {};
       const res = await fetch('/api/leave_requests/'+id+'/hod_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:act==='approve'?'approve':'reject',comment})});
-      if(res.ok){ showToast('Action submitted'); document.getElementById('commentCancel').click(); await refresh(); } else { showToast('Error'); }
+      if(res.ok){ showToast('Action submitted'); document.getElementById('commentCancel').click(); await refresh(); } else { const j = await res.json(); showToast('Error: ' + (j.error || 'Failed to process action')); }
     };
 
     // Theme toggle
     function applyTheme(){ if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark'); }
-    document.getElementById('themeToggle').onclick = ()=>{ const isDark = document.body.classList.toggle('dark'); localStorage.setItem('theme', isDark? 'dark':'light'); };
+    const themeBtn = document.getElementById('themeToggle'); 
+    if(themeBtn) themeBtn.onclick = ()=>{ const isDark = document.body.classList.toggle('dark'); localStorage.setItem('theme', isDark? 'dark':'light'); };
     applyTheme();
 
-    document.getElementById('logout').onclick = async ()=>{ await fetch('/api/logout',{method:'POST'}); location.href='/'; };
+    document.getElementById('logout').onclick = async (e)=>{
+      e.preventDefault();
+      if(!confirm('Are you sure you want to logout?')) return;
+      const btn = document.getElementById('logout');
+      btn.textContent = 'Logging out...';
+      btn.disabled = true;
+      try {
+        await fetch('/api/logout',{method:'POST'});
+        setTimeout(() => { location.href='/'; }, 300);
+      } catch(err) {
+        alert('Logout error: ' + err.message);
+        btn.textContent = 'Logout';
+        btn.disabled = false;
+      }
+    };
     load();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

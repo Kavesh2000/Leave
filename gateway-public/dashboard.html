@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Maisha Bank Portal</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .navbar {
+      background: white;
+      padding: 15px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .navbar-brand {
+      font-size: 22px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .navbar-brand span {
+      color: #667eea;
+    }
+
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .user-info {
+      text-align: right;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .user-role {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .logout-btn {
+      padding: 8px 16px;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: #d32f2f;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .welcome {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .welcome h2 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .welcome p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .module-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .module-card.leave {
+      border-top: 4px solid #4CAF50;
+    }
+
+    .module-card.ticket {
+      border-top: 4px solid #2196F3;
+    }
+
+    .module-header {
+      padding: 30px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .module-icon {
+      font-size: 48px;
+    }
+
+    .module-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .module-body {
+      padding: 20px;
+      background: #f9f9f9;
+      flex-grow: 1;
+    }
+
+    .module-description {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+
+    .module-features {
+      list-style: none;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .module-features li {
+      padding: 5px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .module-features li:before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    .module-card.ticket .module-features li:before {
+      color: #2196F3;
+    }
+
+    .module-footer {
+      padding: 15px 20px;
+      background: white;
+      border-top: 1px solid #eee;
+      text-align: center;
+    }
+
+    .access-btn {
+      display: inline-block;
+      padding: 10px 25px;
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .module-card.ticket .access-btn {
+      background: linear-gradient(135deg, #2196F3 0%, #0b7dda 100%);
+    }
+
+    .access-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .footer {
+      text-align: center;
+      color: white;
+      padding: 20px;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .loading {
+      text-align: center;
+      color: white;
+      font-size: 18px;
+    }
+
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+
+      .navbar-user {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .modules {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="navbar-brand">🏦 <span>Maisha Bank</span></div>
+    <div class="navbar-user">
+      <div class="user-info">
+        <div class="user-name" id="userName">Loading...</div>
+        <div class="user-role" id="userRole"></div>
+      </div>
+      <button class="logout-btn" onclick="handleLogout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="loadingState" class="loading" style="display:none">
+      <div class="spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+
+    <div id="dashboardContent" style="display:none">
+      <div class="welcome">
+        <h2>Welcome to Maisha Bank Management Portal</h2>
+        <p>Access your leave requests and support tickets from one unified interface</p>
+      </div>
+
+      <div class="modules">
+        <div class="module-card leave" onclick="accessLeaveSystem()">
+          <div class="module-header">
+            <div class="module-icon">📅</div>
+            <div>
+              <div class="module-title">Leave Management</div>
+            </div>
+          </div>
+          <div class="module-body">
+            <p class="module-description">Submit, track, and manage your leave requests with ease.</p>
+            <ul class="module-features">
+              <li>Submit leave requests</li>
+              <li>Track request status</li>
+              <li>View leave balance</li>
+              <li>Download approval documents</li>
+            </ul>
+          </div>
+          <div class="module-footer">
+            <button class="access-btn">Access Leave System →</button>
+          </div>
+        </div>
+
+        <div class="module-card ticket" onclick="accessTicketSystem()">
+          <div class="module-header">
+            <div class="module-icon">🎫</div>
+            <div>
+              <div class="module-title">Support Tickets</div>
+            </div>
+          </div>
+          <div class="module-body">
+            <p class="module-description">Submit and manage support tickets for IT and other departments.</p>
+            <ul class="module-features">
+              <li>Submit support tickets</li>
+              <li>Track ticket status</li>
+              <li>View ticket history</li>
+              <li>Upload attachments</li>
+            </ul>
+          </div>
+          <div class="module-footer">
+            <button class="access-btn">Access Ticket System →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Maisha Bank Management Portal • All Systems Integrated</p>
+  </div>
+
+  <script>
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/api/gateway/me');
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById('userName').textContent = data.name || data.email;
+          document.getElementById('userRole').textContent = data.role || 'User';
+
+          document.getElementById('loadingState').style.display = 'none';
+          document.getElementById('dashboardContent').style.display = 'block';
+        } else {
+          window.location.href = '/';
+        }
+      } catch (err) {
+        console.error('Error loading user info:', err);
+        window.location.href = '/';
+      }
+    }
+
+    async function accessLeaveSystem() {
+      try {
+        const response = await fetch('/api/gateway/leave-access');
+        const data = await response.json();
+        if (data.ok) {
+          window.location.href = data.redirect;
+        }
+      } catch (err) {
+        alert('Error accessing leave system: ' + err.message);
+      }
+    }
+
+    async function accessTicketSystem() {
+      try {
+        const response = await fetch('/api/gateway/ticket-access');
+        const data = await response.json();
+        if (data.ok) {
+          window.location.href = data.redirect;
+        }
+      } catch (err) {
+        alert('Error accessing ticketing system: ' + err.message);
+      }
+    }
+
+    async function handleLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        try {
+          await fetch('/api/gateway/logout', { method: 'POST' });
+          window.location.href = '/';
+        } catch (err) {
+          console.error('Logout error:', err);
+        }
+      }
+    }
+
+    // Load on page load
+    document.addEventListener('DOMContentLoaded', loadUserInfo);
+  </script>
+</body>
+</html>

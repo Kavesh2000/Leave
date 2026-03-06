@@ -3,48 +3,67 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>Admin — Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      .modal-fade { opacity: 0; transform: scale(0.95); transition: all 0.3s ease; }
+      .modal-fade.show { opacity: 1; transform: scale(1); }
+    </style>
   </head>
-  <body class="bg-light">
-    <nav class="navbar navbar-expand-sm navbar-dark" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+  <body style="background:#0f1419;color:#e6eef8;">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <nav class="navbar navbar-expand-sm" style="background:linear-gradient(135deg,#10b981 0%,#0d7a66 100%);box-shadow:0 6px 20px rgba(16,185,129,0.15);border-bottom:2px solid #14b8a6;">
       <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="#">🎯 Leave System — Admin</a>
+        <a class="navbar-brand fw-bold" href="#" id="navbarBrand" style="color:#fff;font-weight:700;">Welcome back Admin</a>
         <div class="d-flex gap-3">
-          <button id="themeToggle" class="btn btn-outline-light btn-sm" style="border-radius:8px">🌙</button>
-          <button id="logout" class="btn btn-outline-light btn-sm" style="border-radius:8px">Logout</button>
+          <button id="logout" class="btn" style="background:#ef4444;color:#fff;border:0;border-radius:6px;padding:6px 12px;font-weight:500;">Logout</button>
         </div>
       </div>
     </nav>
     <main class="container-fluid py-4">
       <div class="row">
         <aside class="col-md-3 mb-3">
-          <div class="card shadow-lg h-100" style="border-radius:16px;border:none;background:linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+          <div class="card shadow-lg h-100" style="border-radius:16px;border:1px solid #1e3a8a;background:linear-gradient(135deg,#1e40af,#1e3a8a);">
             <div class="card-body p-3">
-              <div class="d-flex align-items-center mb-4 pb-3 border-bottom" style="border-color:#e0e0e0!important">
-                <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;margin-right:12px;font-size:24px;">👤</div>
+              <div class="d-flex align-items-center mb-4 pb-3 border-bottom" style="border-color:#3b82f6!important">
+                <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;margin-right:12px;font-size:24px;">👤</div>
                 <div>
-                  <div class="fw-bold" style="color:#333;font-size:16px;">Admin Panel</div>
-                  <div id="adminDept" class="text-muted small">System Manager</div>
+                  <div class="fw-bold text-light" style="font-size:16px;">Admin Panel</div>
+                  <div id="adminDept" class="text-muted small" style="color:#bfdbfe;">System Manager</div>
                 </div>
               </div>
               <div class="list-group" style="border:none;gap:8px;display:flex;flex-direction:column;">
-                <button class="list-group-item list-group-item-action active" data-view="requests" style="border-radius:10px;border:none;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;font-weight:500;">📋 Requests</button>
-                <button class="list-group-item list-group-item-action" data-view="departments" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">🏢 Departments</button>
-                <button class="list-group-item list-group-item-action" data-view="createUser" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">➕ Create User</button>
-                <button class="list-group-item list-group-item-action" data-view="users" style="border-radius:10px;border:none;background:#f0f0f0;color:#333;transition:all 0.3s;">👥 Users</button>
+                <button type="button" class="list-group-item list-group-item-action active" data-view="requests" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;font-weight:500;cursor:pointer;">📋 Requests</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="createUser" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">➕ Create User</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="users" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">👥 Users</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="auditLogs" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">📊 Audit Logs</button>
+                <button type="button" id="openActingHodBtn" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;padding:12px;font-weight:500;transition:all 0.3s;cursor:pointer;text-align:left;">👥 Assign Acting HOD</button>
               </div>
             </div>
           </div>
         </aside>
         <section class="col-md-9">
           <div id="view-requests" class="view">
-            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
-                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📋 Leave Requests</h5>
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📋 Leave Requests</h5>
                 <ul id="requests" class="list-group" style="border:none;gap:12px;display:flex;flex-direction:column;"></ul>
+              </div>
+            </div>
+            <!-- Action Modal -->
+            <div id="actionModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
+              <div class="d-flex vh-100 align-items-center justify-content-center">
+                <div class="card p-4 modal-fade" style="width:450px;background:linear-gradient(135deg,#1a2a3f,#0f1a28);border:1px solid #2a4a5f;">
+                  <h6 style="color:#10b981;font-weight:700;margin-bottom:1rem;">Enter <span id="actionType" style="text-transform:uppercase;"></span> Reason</h6>
+                  <textarea id="actionReason" class="form-control mb-3" placeholder="Enter reason/comment..." rows="4" style="background:#0f1a25;border:1px solid #3a5a6a;color:#e6eef8;border-radius:6px;resize:vertical;"></textarea>
+                  <div class="d-flex justify-content-end gap-2">
+                    <button id="actionCancel" class="btn" style="background:#2a3a4a;color:#e6eef8;border:1px solid #3a5a6a;border-radius:6px;padding:8px 16px;">Cancel</button>
+                    <button id="actionSubmit" class="btn" style="background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;border:0;border-radius:6px;padding:8px 16px;font-weight:600;">Submit</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -52,58 +71,138 @@
 
 
           <div id="view-createUser" class="view d-none">
-            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
-                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">➕ Create New User</h5>
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">➕ Create New User</h5>
                 <form id="createUserForm">
-                  <div class="mb-3"><input class="form-control" placeholder="Full name" id="u_full_name" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
-                  <div class="mb-3"><input class="form-control" placeholder="Email" id="u_email" type="email" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
-                  <div class="mb-3"><input class="form-control" placeholder="Password" id="u_password" type="password" required style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
                   <div class="mb-3">
-                    <select id="u_role" class="form-select" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
-                      <option value="employee">👤 Employee</option>
-                      <option value="HOD">🎯 HOD</option>
-                      <option value="admin">🛡️ Admin</option>
+                    <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">👤 Full Name</label>
+                    <input class="form-control" placeholder="e.g., John Doe" id="u_full_name" required style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                  </div>
+                  <div class="mb-3">
+                    <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">📧 Email</label>
+                    <input class="form-control" placeholder="e.g., john@example.com" id="u_email" type="email" required style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                  </div>
+                  <div class="mb-3">
+                    <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">🔐 Password</label>
+                    <input class="form-control" placeholder="Enter secure password" id="u_password" type="password" required style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                  </div>
+                  <div class="mb-3">
+                    <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">🎯 Role</label>
+                    <select id="u_role" class="form-select" style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;" onchange="updateDepartmentField()" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                      <option value="employee" style="background:#ffffff;color:#1f2937;">👤 Employee</option>
+                      <option value="HOD" style="background:#ffffff;color:#1f2937;">🎯 HOD</option>
+                      <option value="admin" style="background:#ffffff;color:#1f2937;">🛡️ Admin</option>
                     </select>
                   </div>
-                  <div class="mb-3"><input class="form-control" placeholder="Department (optional)" id="u_department" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;"></div>
-                  <div class="d-grid"><button class="btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:10px;padding:12px;font-weight:600;">✨ Create User</button></div>
+                  <div class="mb-3">
+                    <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">🏢 Department</label>
+                    <select id="u_department" class="form-select" style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;display:none;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                      <option value="">-- Select Department --</option>
+                    </select>
+                    <input id="u_department_text" class="form-control" placeholder="e.g., IT, Finance" style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;display:none;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                  </div>
+                  <div class="d-grid"><button type="submit" class="btn" style="background:linear-gradient(135deg,#7c3aed 10%, #a855f7 50%, #ec4899 90%);color:white;border:none;border-radius:10px;padding:14px;font-weight:600;font-size:15px;transition:all 0.3s;box-shadow:0 8px 16px rgba(124,58,237,0.3);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(124,58,237,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 16px rgba(124,58,237,0.3)'">✨ Create User</button></div>
                 </form>
               </div>
             </div>
           </div>
 
-          <div id="view-departments" class="view d-none">
-            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
+          <div id="view-users" class="view d-none">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
-                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">🏢 Department Management</h5>
-                <div class="mb-3 d-flex gap-2">
-                  <input id="deptName" class="form-control" placeholder="Department name" style="border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
-                  <select id="deptHod" class="form-select" style="width:320px;border-radius:10px;border:none;background:#f0f0f0;padding:12px;">
-                    <option value="">(No HOD)</option>
-                  </select>
-                  <button id="createDept" class="btn" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:10px;padding:12px;font-weight:600;white-space:nowrap;">➕ Create</button>
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">👥 User Management</h5>
+                <div id="usersList"></div>
+                <!-- Reset password modal -->
+                <div id="resetModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
+                  <div class="d-flex vh-100 align-items-center justify-content-center">
+                    <div class="card p-3 modal-fade" style="width:420px;background:linear-gradient(135deg,#1a2a3f,#0f1a28);border:1px solid #2a4a5f;">
+                      <h6 style="color:#10b981;font-weight:700;margin-bottom:1rem;">Reset password for <span id="resetName"></span></h6>
+                      <input id="resetPassword" class="form-control mb-3" placeholder="New password" type="password" style="background:#0f1a25;border:1px solid #3a5a6a;color:#e6eef8;border-radius:6px;">
+                      <div class="d-flex justify-content-end gap-2"><button id="resetCancel" class="btn" style="background:#2a3a4a;color:#e6eef8;border:1px solid #3a5a6a;border-radius:6px;padding:8px 12px;">Cancel</button><button id="resetSubmit" class="btn" style="background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;border:0;border-radius:6px;padding:8px 12px;font-weight:600;">Reset</button></div>
+                    </div>
+                  </div>
                 </div>
-                <div id="departmentsList" style="display:grid;gap:12px;"></div>
+
+                <!-- Edit User Modal -->
+                <div id="editModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
+                  <div class="d-flex vh-100 align-items-center justify-content-center">
+                    <div class="card p-4 modal-fade" style="width:500px;background:linear-gradient(135deg,#8b5cf6 10%, #ec4899 40%, #f97316 90%);border:1px solid rgba(255,255,255,0.2);box-shadow:0 20px 60px rgba(139,92,246,0.4);">
+                      <h5 style="color:white;font-weight:700;margin-bottom:1.5rem;text-shadow:0 2px 8px rgba(0,0,0,0.3);">✏️ Edit User Information</h5>
+                      <div class="mb-3">
+                        <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">👤 Full Name</label>
+                        <input id="editFullName" class="form-control" type="text" style="background:rgba(255,255,255,0.95);border:2px solid #fbbf24;color:#1f2937;border-radius:8px;padding:10px 12px;font-weight:500;">
+                      </div>
+                      <div class="mb-3">
+                        <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">📧 Email</label>
+                        <input id="editEmail" class="form-control" type="email" disabled style="background:rgba(255,255,255,0.7);border:2px solid #d1d5db;color:#6b7280;border-radius:8px;padding:10px 12px;font-weight:500;cursor:not-allowed;">
+                      </div>
+                      <div class="mb-3">
+                        <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">🎯 Role</label>
+                        <select id="editRole" class="form-select" style="background:rgba(255,255,255,0.95);border:2px solid #fbbf24;color:#1f2937;border-radius:8px;padding:10px 12px;font-weight:500;">
+                          <option value="employee">👤 Employee</option>
+                          <option value="HOD">🎯 HOD</option>
+                          <option value="admin">🛡️ Admin</option>
+                        </select>
+                      </div>
+                      <div class="mb-4">
+                        <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">🏢 Department</label>
+                        <input id="editDept" class="form-control" type="text" placeholder="Leave empty for non-department roles" style="background:rgba(255,255,255,0.95);border:2px solid #fbbf24;color:#1f2937;border-radius:8px;padding:10px 12px;font-weight:500;">
+                      </div>
+                      <div class="d-flex justify-content-end gap-2">
+                        <button id="editCancel" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:2px solid white;border-radius:8px;padding:10px 24px;font-weight:600;transition:all 0.3s;">Cancel</button>
+                        <button id="editSubmit" class="btn" style="background:#fbbf24;color:#1f2937;border:none;border-radius:8px;padding:10px 24px;font-weight:700;box-shadow:0 8px 16px rgba(251,191,36,0.4);transition:all 0.3s;">💾 Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div id="view-users" class="view d-none">
-            <div class="card shadow-lg mb-3" style="border-radius:16px;border:none;background:linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);">
-              <div class="card-body p-4">
-                <h5 class="card-title" style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">👥 User Management</h5>
-                <div id="usersList"></div>
-                <!-- Reset password modal -->
-                <div id="resetModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(2px)">
-                  <div class="d-flex vh-100 align-items-center justify-content-center">
-                    <div class="card p-3 modal-fade" style="width:420px">
-                      <h6>Reset password for <span id="resetName"></span></h6>
-                      <input id="resetPassword" class="form-control mb-2" placeholder="New password" type="password">
-                      <div class="d-flex justify-content-end gap-2"><button id="resetCancel" class="btn btn-outline-secondary">Cancel</button><button id="resetSubmit" class="btn btn-primary">Reset</button></div>
-                    </div>
-                  </div>
+          <!-- Assign Acting HOD Modal -->
+          <div id="actingHodModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
+            <div class="d-flex vh-100 align-items-center justify-content-center">
+              <div class="card p-4 modal-fade" style="width:500px;background:linear-gradient(135deg,#7c3aed 10%, #a855f7 50%, #ec4899 90%);border:1px solid rgba(255,255,255,0.2);box-shadow:0 20px 60px rgba(124,58,237,0.4);">
+                <h5 style="color:white;font-weight:700;margin-bottom:1.5rem;text-shadow:0 2px 8px rgba(0,0,0,0.3);">👥 Assign Acting HOD</h5>
+                <div class="mb-3">
+                  <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">🏢 Department</label>
+                  <select id="hodDeptSelect" class="form-select" style="background:rgba(255,255,255,0.95);border:2px solid #fbbf24;color:#1f2937;border-radius:8px;padding:10px 12px;font-weight:500;"></select>
                 </div>
+                <div class="mb-4">
+                  <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">🙋 Select Acting HOD (or clear)</label>
+                  <select id="hodUserSelect" class="form-select" style="background:rgba(255,255,255,0.95);border:2px solid #fbbf24;color:#1f2937;border-radius:8px;padding:10px 12px;font-weight:500;">
+                    <option value="">-- Clear Acting HOD --</option>
+                  </select>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                  <button id="actingHodCancel" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:2px solid white;border-radius:8px;padding:10px 24px;font-weight:600;transition:all 0.3s;">Cancel</button>
+                  <button id="actingHodSubmit" class="btn" style="background:#fbbf24;color:#1f2937;border:none;border-radius:8px;padding:10px 24px;font-weight:700;box-shadow:0 8px 16px rgba(251,191,36,0.4);transition:all 0.3s;">💾 Assign</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="view-auditLogs" class="view d-none">
+            <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
+              <div class="card-body p-4">
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📊 System Audit Logs</h5>
+                <div class="mb-3" style="display:flex;gap:12px;flex-wrap:wrap;">
+                  <input type="text" id="auditFilterEmail" class="form-control" placeholder="Filter by user email..." style="border-radius:10px;border:1px solid #3a5a6a;background:#0f1a25;padding:12px;color:#e6eef8;flex:1;min-width:200px;">
+                  <select id="auditFilterAction" class="form-select" style="border-radius:10px;border:1px solid #3a5a6a;background:#0f1a25;padding:12px;color:#e6eef8;flex:1;min-width:150px;">
+                    <option value="">All Actions</option>
+                    <option value="LOGIN">LOGIN</option>
+                    <option value="LOGOUT">LOGOUT</option>
+                    <option value="CREATE">CREATE</option>
+                    <option value="APPROVE">APPROVE</option>
+                    <option value="REJECT">REJECT</option>
+                    <option value="UPDATE">UPDATE</option>
+                    <option value="DELETE">DELETE</option>
+                  </select>
+                  <button class="btn" id="auditRefreshBtn" style="background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-weight:600;cursor:pointer;">🔄 Refresh</button>
+                  <button class="btn" id="auditExportBtn" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;padding:12px 24px;font-weight:600;cursor:pointer;">📥 Export to Excel</button>
+                </div>
+                <div id="auditLogsContainer" style="overflow-x:auto;"></div>
               </div>
             </div>
           </div>
@@ -113,50 +212,259 @@
     <script>
     async function load(){
       try{ const me = await (await fetch('/api/me')).json(); if(me && me.department) document.getElementById('adminDept').textContent = me.department; }catch(e){}
-      bindSidebar();
+      // Ensure navbar welcome text is Admin and white
+      try{ const nb = document.getElementById('navbarBrand'); if(nb){ nb.textContent = 'Welcome back Admin'; nb.style.color = '#ffffff'; } }catch(e){}
+      
+      // Setup sidebar button clicks
+      document.querySelectorAll('button[data-view]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          showView(this.getAttribute('data-view'));
+        });
+      });
+      
       await refreshRequests();
       await refreshBalances();
       await refreshUsers();
       await refreshAnalytics();
+      
+      // Setup audit logs filter listeners
+      document.getElementById('auditFilterEmail').addEventListener('input', debounce(refreshAuditLogs, 300));
+      document.getElementById('auditFilterAction').addEventListener('change', refreshAuditLogs);
+      document.getElementById('auditRefreshBtn').addEventListener('click', refreshAuditLogs);
+      document.getElementById('auditExportBtn').addEventListener('click', exportAuditLogsToExcel);
+      
+      // make sure create-user form controls reflect default role
+      if(document.getElementById('u_role')) updateDepartmentField();
       showView('requests');
     }
 
-    function bindSidebar(){
-      document.querySelectorAll('.list-group .list-group-item').forEach(btn=> btn.onclick = ()=>{
-        document.querySelectorAll('.list-group .list-group-item').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        showView(btn.getAttribute('data-view'));
-      });
+    function debounce(func, delay) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), delay);
+      };
     }
 
     function showView(name){
       document.querySelectorAll('.view').forEach(v=> v.classList.add('d-none'));
+      document.querySelectorAll('button[data-view]').forEach(b=> b.classList.remove('active'));
+      
       const el = document.getElementById('view-' + name);
       if(el) el.classList.remove('d-none');
+      
+      const activeBtn = document.querySelector('button[data-view="' + name + '"]');
+      if(activeBtn) activeBtn.classList.add('active');
+      
+      // when user navigates to createUser view ensure department field is updated
+      if(name === 'createUser') updateDepartmentField();
       if(name === 'analytics') refreshAnalytics();
+    }
+
+    async function refreshAuditLogs(){
+      try {
+        const email = document.getElementById('auditFilterEmail').value;
+        const action = document.getElementById('auditFilterAction').value;
+        
+        let url = '/api/audit-logs?offset=0&limit=100';
+        if(email) url += '&user_email=' + encodeURIComponent(email);
+        if(action) url += '&action=' + encodeURIComponent(action);
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        const container = document.getElementById('auditLogsContainer');
+        if(!result.data || result.data.length === 0) {
+          container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">No audit logs found</div>';
+          return;
+        }
+        
+        let html = `<table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>🕐 Timestamp</th><th style='padding:12px;font-weight:600;'>👤 User Email</th><th style='padding:12px;font-weight:600;'>⚡ Action</th><th style='padding:12px;font-weight:600;'>📌 Entity Type</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>📝 Details</th></tr></thead><tbody>`;
+        
+        result.data.forEach((log, idx) => {
+          const bgColor = idx % 2 === 0 ? '#f8f9fa' : '#ffffff';
+          const timestamp = new Date(log.timestamp).toLocaleString();
+          const actionColor = {
+            'LOGIN': '#10b981',
+            'LOGOUT': '#f59e0b',
+            'CREATE': '#3b82f6',
+            'APPROVE': '#28a745',
+            'REJECT': '#ef4444',
+            'UPDATE': '#6366f1',
+            'DELETE': '#e11d48'
+          }[log.action] || '#6b7280';
+          
+          html += `<tr style='background:${bgColor};border-radius:12px;'>\n            <td style='border-radius:8px 0 0 8px;padding:12px;font-size:12px;'>${timestamp}</td>\n            <td style='padding:12px;font-size:13px;'><strong>${log.user_email}</strong></td>\n            <td style='padding:12px;'><span style='background:${actionColor};color:white;padding:4px 12px;border-radius:20px;font-weight:600;font-size:12px;'>${log.action}</span></td>\n            <td style='padding:12px;font-size:13px;'>${log.entity_type}</td>\n            <td style='border-radius:0 8px 8px 0;padding:12px;font-size:12px;max-width:300px;word-wrap:break-word;'>${log.details}</td>\n          </tr>`;
+        });
+        
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+      } catch(e) {
+        console.error(e);
+        document.getElementById('auditLogsContainer').innerHTML = '<div style="color:#ef4444;padding:20px;">Error loading audit logs</div>';
+      }
+    }
+
+    async function exportAuditLogsToExcel(){
+      try {
+        const email = document.getElementById('auditFilterEmail').value;
+        const action = document.getElementById('auditFilterAction').value;
+        
+        let url = '/api/audit-logs?offset=0&limit=10000';
+        if(email) url += '&user_email=' + encodeURIComponent(email);
+        if(action) url += '&action=' + encodeURIComponent(action);
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if(!result.data || result.data.length === 0) {
+          showToast('No audit logs to export');
+          return;
+        }
+        
+        // Prepare data for Excel
+        const excelData = result.data.map(log => ({
+          'Timestamp': new Date(log.timestamp).toLocaleString(),
+          'User Email': log.user_email,
+          'Action': log.action,
+          'Entity Type': log.entity_type,
+          'Entity ID': log.entity_id,
+          'Details': log.details
+        }));
+        
+        // Create worksheet
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Set column widths
+        const columnWidths = [
+          { wch: 20 }, // Timestamp
+          { wch: 25 }, // User Email
+          { wch: 12 }, // Action
+          { wch: 15 }, // Entity Type
+          { wch: 12 }, // Entity ID
+          { wch: 40 }  // Details
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        // Create workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Audit Logs');
+        
+        // Generate filename with timestamp
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `Audit_Logs_${timestamp}.xlsx`;
+        
+        // Write file
+        XLSX.writeFile(workbook, filename);
+        showToast(`✓ Exported ${excelData.length} audit logs to Excel`);
+      } catch(e) {
+        console.error(e);
+        showToast('Error exporting audit logs');
+      }
+    }
+
+    function showToast(msg){ 
+      const wrap = document.querySelector('.toast-wrap') || (function(){ 
+        const d=document.createElement('div'); 
+        d.className='toast-wrap'; 
+        d.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10000;';
+        document.body.appendChild(d); 
+        return d; 
+      })(); 
+      const t=document.createElement('div'); 
+      t.className='toast'; 
+      t.textContent=msg; 
+      t.style.cssText='background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 8px 24px rgba(16,185,129,0.3);border-left:4px solid #14b8a6;font-weight:600;font-size:14px;margin-top:8px;'; 
+      wrap.appendChild(t); 
+      setTimeout(()=> t.remove(),3500); 
     }
 
     async function refreshRequests(){
       const r = await (await fetch('/api/leave_requests')).json(); const el=document.getElementById('requests'); el.innerHTML='';
-      r.forEach(x=>{
-        const li=document.createElement('li'); li.className='list-group-item';
-        const statusColor = x.status === 'pending' ? '#ff6b6b' : x.status === 'hod_approved' ? '#4ecdc4' : x.status === 'admin_approved' ? '#28a745' : '#95e1d3';
-        const statusText = x.status === 'pending' ? '⏳ Pending (with HOD)' : x.status === 'hod_approved' ? '✓ HOD Approved' : x.status === 'admin_approved' ? '✅ Approved' : '✗ Rejected';
-        const actionButtons = x.status === 'hod_approved' ? `<button class='btn btn-sm' style='background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);color:white;border:none;border-radius:8px;' data-id='${x.id}' data-act='approve'>✓ Approve</button><button class='btn btn-sm' style='background:linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);color:white;border:none;border-radius:8px;' data-id='${x.id}' data-act='reject'>✕ Reject</button>` : '';
-        li.innerHTML = `<div style='padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid ${statusColor};'><div class='d-flex justify-content-between align-items-start'><div><b style='font-size:16px;'>${x.full_name}</b><div class='small text-muted'>${x.leave_type} • ${x.start_date} → ${x.end_date} • <span style='background:#f0f0f0;padding:2px 8px;border-radius:4px;'>${x.days} days</span></div><div style='margin-top:8px;'><span style='background:${statusColor};color:white;padding:4px 8px;border-radius:4px;font-size:12px;font-weight:bold;'>${statusText}</span></div></div><div class='d-flex gap-2'>${actionButtons}</div></div></div>`;
+      
+      if(r.length === 0) {
+        el.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">📭 No leave requests found</div>';
+        return;
+      }
+      
+      r.forEach((x, idx)=>{
+        const statusConfig = {
+          'pending': { color: '#ef4444', bg: '#fef2f2', text: '⏳ Pending', lightText: '#dc2626' },
+          'hod_approved': { color: '#0ea5e9', bg: '#f0f9ff', text: '✓ HOD Approved', lightText: '#0284c7' },
+          'admin_approved': { color: '#22c55e', bg: '#f0fdf4', text: '✅ Approved', lightText: '#16a34a' },
+          'rejected': { color: '#a78bfa', bg: '#faf5ff', text: '✗ Rejected', lightText: '#8b5cf6' }
+        };
+        const status = statusConfig[x.status] || statusConfig['pending'];
+        const actionButtons = x.status === 'hod_approved' ? `<button class='btn-action' data-id='${x.id}' data-act='approve' style='background:linear-gradient(135deg, #10b981 0%, #059669 100%);'>✓</button><button class='btn-action' data-id='${x.id}' data-act='reject' style='background:linear-gradient(135deg, #f97316 0%, #ea580c 100%);'>✕</button>` : '';
+        const reasonDisplay = (x.status === 'rejected' && x.admin_comment) ? `<div style='font-size:11px;color:#7c3aed;margin-top:4px;'>📌 ${x.admin_comment}</div>` : '';
+        
+        const li = document.createElement('li');
+        li.innerHTML = `<div style='background:${status.bg};border-left:3px solid ${status.color};padding:10px 12px;border-radius:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;'><div style='flex:1;min-width:0;'><div style='display:flex;align-items:center;gap:8px;margin-bottom:4px;'><strong style='color:#1f2937;font-size:14px;'>${x.full_name}</strong><span style='background:${status.color};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;'>${status.text}</span></div><div style='font-size:12px;color:#6b7280;margin-bottom:6px;'>${x.leave_type} • ${x.start_date} → ${x.end_date} • <strong style='color:#1f2937;'>${x.days}d</strong></div><div style='display:flex;gap:8px;align-items:center;font-size:11px;'><span style='background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-weight:600;'>💰 ${x.remaining_days}/${x.days}</span></div>${reasonDisplay}</div><div style='display:flex;gap:6px;'>${actionButtons}</div></div>`;
+        li.className = 'list-group-item';
+        li.style.cssText = 'border:none;padding:0;margin-bottom:8px;';
         el.appendChild(li);
       });
+
+      // Add CSS for action buttons if not already there
+      if(!document.getElementById('actionButtonStyle')) {
+        const style = document.createElement('style');
+        style.id = 'actionButtonStyle';
+        style.textContent = `.btn-action { width:32px;height:32px;border:none;color:white;border-radius:6px;cursor:pointer;font-weight:bold;transition:all 0.2s;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);} .btn-action:hover { transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.25);} .btn-action:active { transform:translateY(0);}`;
+        document.head.appendChild(style);
+      }
+
       document.querySelectorAll('button[data-id]').forEach(btn=>btn.onclick=async e=>{
-        const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act'); const comment = prompt('Comment')||'';
-        const res = await fetch('/api/leave_requests/'+id+'/admin_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:act,comment})});
-        if(res.ok) { await refreshRequests(); await refreshBalances(); } else alert(JSON.stringify(await res.json()));
+        const id = btn.getAttribute('data-id'); 
+        const act = btn.getAttribute('data-act');
+        document.getElementById('actionType').textContent = act;
+        document.getElementById('actionReason').value = '';
+        document.getElementById('actionModal').dataset.requestId = id;
+        document.getElementById('actionModal').dataset.action = act;
+        document.getElementById('actionModal').classList.remove('d-none');
+        setTimeout(()=> document.querySelector('#actionModal .modal-fade').classList.add('show'),10);
       });
     }
 
     async function refreshBalances(){
-      const b = await (await fetch('/api/balances')).json(); const be=document.getElementById('balances'); be.innerHTML='';
-      b.forEach(x=>{ const row=document.createElement('div'); row.className='mb-2 d-flex gap-2 align-items-center'; row.style.cssText='padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid #667eea;'; row.innerHTML = `<div class='flex-grow-1'><strong style='font-size:16px;'>${x.full_name}</strong><div class='text-muted small'>${x.leave_type}</div></div><input class='form-control form-control-sm' style='width:90px;border-radius:8px;border:none;background:#f0f0f0;' value='${x.remaining_days}' data-user='${x.user_id}' data-type='${x.leave_type_id}'/><button class='btn btn-sm' style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;border-radius:8px;' data-save='${x.user_id}-${x.leave_type_id}'>Save</button>`; be.appendChild(row); });
-      document.querySelectorAll('button[data-save]').forEach(btn=>btn.onclick=async ()=>{ const key = btn.getAttribute('data-save'); const [u,t]=key.split('-'); const input = btn.previousElementSibling; const val = parseInt(input.value); const res = await fetch(`/api/balances/${u}/${t}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({remaining_days:val})}); if(res.ok) { await refreshBalances(); } else alert(JSON.stringify(await res.json())); });
+      const b = await (await fetch('/api/balances')).json(); 
+      const be = document.getElementById('balances'); 
+      if(!be) return;
+      let html = `<div style='overflow-x:auto;'><table style='width:100%;border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);color:white;font-weight:600;'><th style='border-radius:8px 0 0 0;padding:12px;text-align:left;'>👤 Name</th><th style='padding:12px;text-align:left;'>🏢 Department</th><th style='padding:12px;text-align:center;'>📅 Type</th><th style='border-radius:0 8px 0 0;padding:12px;text-align:right;'>Remaining</th></tr></thead><tbody>`;
+      b.forEach((x, idx) => {
+        const bgColor = idx % 2 === 0 ? '#f3f0ff' : '#ffffff';
+        html += `<tr style='background:${bgColor};border-radius:8px;border:1px solid #e9d5ff;'><td style='border-radius:8px 0 0 8px;padding:12px;'><strong>${x.full_name}</strong></td><td style='padding:12px;color:#6b7280;'>${x.department || '—'}</td><td style='padding:12px;text-align:center;'><span style='background:#e9d5ff;color:#7c3aed;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;'>${x.leave_type}</span></td><td style='border-radius:0 8px 8px 0;padding:12px;'><div style='display:flex;gap:6px;'><input type='number' value='${x.remaining_days}' data-user='${x.user_id}' data-type='${x.leave_type_id}' style='width:60px;padding:8px;border:1px solid #d8b4fe;border-radius:6px;background:#fff;font-weight:bold;' /><button data-save='${x.user_id}-${x.leave_type_id}' style='padding:8px 12px;background:linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px;'>✓</button></div></td></tr>`;
+      });
+      html += `</tbody></table></div>`;
+      be.innerHTML = html;
+      document.querySelectorAll('button[data-save]').forEach(btn=>btn.onclick=async ()=>{ const key = btn.getAttribute('data-save'); const [u,t]=key.split('-'); const input = btn.parentElement.querySelector('input'); const val = parseInt(input.value); const res = await fetch(`/api/balances/${u}/${t}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({remaining_days:val})}); if(res.ok) { await refreshBalances(); } else alert(JSON.stringify(await res.json())); });
+    }
+
+    async function updateDepartmentField(){
+      const role = document.getElementById('u_role').value;
+      const deptSelect = document.getElementById('u_department');
+      const deptText = document.getElementById('u_department_text');
+      
+      if(role === 'employee'){
+        deptSelect.style.display = 'block';
+        deptText.style.display = 'none';
+        // Load departments for dropdown
+        try {
+          const depts = await (await fetch('/api/departments')).json();
+          deptSelect.innerHTML = '<option value="">-- Select Department --</option>';
+          depts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.name;
+            opt.textContent = d.name;
+            deptSelect.appendChild(opt);
+          });
+        } catch(e) { console.error(e); }
+      } else {
+        deptSelect.style.display = 'none';
+        deptText.style.display = 'block';
+        deptText.value = '';
+      }
     }
 
     async function refreshAnalytics(){
@@ -167,25 +475,61 @@
         const deptData = d.map(r=> r.days || 0);
         const typeLabels = t.map(r=> r.type);
         const typeData = t.map(r=> r.days || 0);
+        
+        const chartDeptEl = document.getElementById('chart-dept');
+        const chartTypeEl = document.getElementById('chart-type');
+        if(!chartDeptEl || !chartTypeEl) return; // Exit if chart elements don't exist
+        
         if(window._deptChart) window._deptChart.destroy();
         if(window._typeChart) window._typeChart.destroy();
-        const ctxD = document.getElementById('chart-dept').getContext('2d');
-        window._deptChart = new Chart(ctxD, {type:'bar', data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:['#667eea','#764ba2','#f093fb','#4facfe'], borderRadius:8, borderSkipped:false}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}, scales:{y:{beginAtZero:true,ticks:{font:{size:12}}}}}});
-        const ctxT = document.getElementById('chart-type').getContext('2d');
-        window._typeChart = new Chart(ctxT, {type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#667eea','#764ba2','#f093fb','#4facfe','#fa709a','#fee140'], borderWidth:3, borderColor:'#ffffff'}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}}});
+        
+        const ctxD = chartDeptEl.getContext('2d');
+        window._deptChart = new Chart(ctxD, {type:'bar', data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:['#10b981','#0d7a66','#34d399','#6ee7b7'], borderRadius:8, borderSkipped:false}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}, scales:{y:{beginAtZero:true,ticks:{font:{size:12}}}}}});
+        
+        const ctxT = chartTypeEl.getContext('2d');
+        window._typeChart = new Chart(ctxT, {type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#10b981','#0d7a66','#34d399','#6ee7b7','#10b981','#fee140'], borderWidth:3, borderColor:'#ffffff'}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}}});
       }catch(e){ console.error(e); }
     }
 
     document.addEventListener('submit', async e =>{
       if(e.target && e.target.id === 'createUserForm'){
         e.preventDefault();
-        const full_name = document.getElementById('u_full_name').value;
-        const email = document.getElementById('u_email').value;
-        const password = document.getElementById('u_password').value;
+         const full_name = document.getElementById('u_full_name').value.trim();
+         const email = document.getElementById('u_email').value.trim();
+         const password = document.getElementById('u_password').value.trim();
         const role = document.getElementById('u_role').value;
-        const department = document.getElementById('u_department').value || null;
-        const res = await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name,email,password,role,department})});
-        if(res.ok){ alert('User created'); e.target.reset(); await refreshUsers(); await refreshBalances(); } else alert(JSON.stringify(await res.json()));
+       
+         if(!full_name || !email || !password) {
+           showToast('⚠️ Please fill in all required fields');
+           return;
+         }
+       
+         let department = null;
+        if(role === 'employee') {
+           department = document.getElementById('u_department').value || null;
+           if(!department) { showToast('⚠️ Employee must have a department'); return; }
+        } else {
+           department = document.getElementById('u_department_text').value.trim() || null;
+        }
+       
+         try {
+           const res = await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name,email,password,role,department})});
+           const data = await res.json();
+         
+           if(res.ok){ 
+             showToast('✅ User created and saved to database'); 
+             e.target.reset();
+             document.getElementById('u_department').innerHTML = '<option value="">-- Select Department --</option>';
+             document.getElementById('u_role').value = 'employee';
+             updateDepartmentField();
+             await refreshUsers(); 
+             await refreshBalances(); 
+           } else { 
+             showToast('❌ Error: '+(data.error||'Failed to create user')); 
+           }
+         } catch(err) {
+           showToast('❌ Network error: '+err.message);
+         }
       }
     });
 
@@ -198,14 +542,107 @@
       if(res.ok){ showToast('Password reset'); document.getElementById('resetPassword').value=''; document.getElementById('resetCancel').click(); } else { const j=await res.json(); showToast('Error: '+(j.error||'')); }
     };
 
+    // Action modal handlers (approve/reject)
+    document.getElementById('actionCancel').onclick = ()=>{ document.querySelector('#actionModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('actionModal').classList.add('d-none'),220); };
+    document.getElementById('actionSubmit').onclick = async ()=>{
+      const id = document.getElementById('actionModal').dataset.requestId; 
+      const act = document.getElementById('actionModal').dataset.action;
+      const reason = document.getElementById('actionReason').value;
+      if(!reason.trim()){ alert('Please enter a reason'); return; }
+      const res = await fetch('/api/leave_requests/'+id+'/admin_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:act,comment:reason})});
+      if(res.ok){ showToast(act==='approve' ? 'Leave approved & balance deducted' : 'Leave rejected'); document.getElementById('actionCancel').click(); await refreshRequests(); await refreshBalances(); } else { const j=await res.json(); showToast('Error: '+(j.error||'Unknown error')); }
+    };
+
+    // Edit user modal handlers
+    document.getElementById('editCancel').onclick = ()=>{ document.querySelector('#editModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('editModal').classList.add('d-none'),220); };
+    document.getElementById('editSubmit').onclick = async ()=>{
+      const id = document.getElementById('editModal').dataset.userId;
+      const fullName = document.getElementById('editFullName').value.trim();
+      const role = document.getElementById('editRole').value;
+      const dept = document.getElementById('editDept').value.trim() || null;
+      
+      if(!fullName){ showToast('Full name is required'); return; }
+      
+      const res = await fetch('/api/users/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:fullName, role:role, department:dept})});
+      if(res.ok){ 
+        showToast('✅ User updated successfully'); 
+        document.getElementById('editCancel').click(); 
+        await refreshUsers(); 
+        await refreshBalances(); 
+      } else { 
+        const j=await res.json(); 
+        showToast('Error: '+(j.error||'Failed to update user')); 
+      }
+    };
+
+    // Acting HOD modal handlers
+    document.getElementById('openActingHodBtn').onclick = async ()=>{
+      // Load departments and employees
+      const depts = await (await fetch('/api/departments')).json();
+      const users = await (await fetch('/api/users')).json();
+      
+      const deptSel = document.getElementById('hodDeptSelect');
+      deptSel.innerHTML = '';
+      depts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.name;
+        deptSel.appendChild(opt);
+      });
+      
+      // Store users globally for selection
+      window.allUsers = users;
+      
+      // Populate user dropdown with employees in first dept
+      if(depts.length > 0) await updateActingHodUsers(depts[0].id);
+      
+      document.getElementById('actingHodModal').classList.remove('d-none');
+      setTimeout(()=> document.querySelector('#actingHodModal .modal-fade').classList.add('show'),10);
+    };
+    
+    document.getElementById('hodDeptSelect').onchange = async ()=>{
+      const deptId = parseInt(document.getElementById('hodDeptSelect').value);
+      await updateActingHodUsers(deptId);
+    };
+    
+    async function updateActingHodUsers(deptId){
+      const depts = await (await fetch('/api/departments')).json();
+      const dept = depts.find(d => d.id === deptId);
+      const users = window.allUsers || [];
+      
+      // Filter employees in this department
+      const empls = users.filter(u => u.department === dept?.name && u.role === 'employee');
+      
+      const userSel = document.getElementById('hodUserSelect');
+      userSel.innerHTML = '<option value="">-- Clear Acting HOD --</option>';
+      empls.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.full_name + ' (' + u.email + ')';
+        userSel.appendChild(opt);
+      });
+    }
+    
+    document.getElementById('actingHodCancel').onclick = ()=>{ document.querySelector('#actingHodModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('actingHodModal').classList.add('d-none'),220); };
+    document.getElementById('actingHodSubmit').onclick = async ()=>{
+      const deptId = parseInt(document.getElementById('hodDeptSelect').value);
+      const userId = document.getElementById('hodUserSelect').value || null;
+      const userIdNum = userId ? parseInt(userId) : null;
+      
+      const res = await fetch(`/api/departments/${deptId}/acting_hod`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id: userIdNum})});
+      if(res.ok){ 
+        showToast(userIdNum ? '✅ Acting HOD assigned' : '✅ Acting HOD cleared'); 
+        document.getElementById('actingHodCancel').click(); 
+      } else { 
+        const j=await res.json(); 
+        showToast('Error: '+(j.error||'Failed to update')); 
+      }
+    };
+
     async function refreshUsers(){
       const users = await (await fetch('/api/users')).json();
       const balances = await (await fetch('/api/balances')).json();
-      const depts = await (await fetch('/api/departments')).json();
       const list = document.getElementById('usersList');
-      
-      const deptHodMap = {};
-      depts.forEach(d=> deptHodMap[d.name] = d.hod_name || '(none)');
       
       const userBalanceMap = {};
       balances.forEach(b=>{
@@ -213,13 +650,12 @@
         userBalanceMap[b.user_id][b.leave_type] = b.remaining_days;
       });
       
-      let html = `<div style='overflow-x:auto;'><table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>👤 Name</th><th style='padding:12px;font-weight:600;'>🏢 Department</th><th style='padding:12px;font-weight:600;'>👔 HOD</th><th style='padding:12px;font-weight:600;'>📅 Annual</th><th style='padding:12px;font-weight:600;'>🏥 Sick</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>⚙️ Actions</th></tr></thead><tbody>`;
+      let html = `<div style='overflow-x:auto;'><table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>👤 Name</th><th style='padding:12px;font-weight:600;'>🏢 Department</th><th style='padding:12px;font-weight:600;'>📅 Annual</th><th style='padding:12px;font-weight:600;'>🏥 Sick</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>⚙️ Actions</th></tr></thead><tbody>`;
       users.forEach((u,idx)=>{
         const annual = userBalanceMap[u.id]?.Annual || 0;
         const sick = userBalanceMap[u.id]?.Sick || 0;
-        const hod = deptHodMap[u.department] || '—';
         const bgColor = idx % 2 === 0 ? '#f8f9fa' : '#ffffff';
-        html += `<tr style='background:${bgColor};border-radius:12px;'>\n          <td style='border-radius:8px 0 0 8px;padding:12px;'><strong style='display:block;'>${u.full_name}</strong><div class='text-muted' style='font-size:12px;'>${u.email}</div></td>\n          <td style='padding:12px;'>${u.department || '—'}</td>\n          <td style='padding:12px;'>${hod}</td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${annual}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${sick}</span></td>\n          <td style='border-radius:0 8px 8px 0;padding:12px;'>\n            <button class='btn btn-sm' style='background:#667eea;color:white;border:none;border-radius:6px;' data-edit='${u.id}'>✏️ Edit</button>\n            <button class='btn btn-sm' style='background:#f59e0b;color:white;border:none;border-radius:6px;margin-left:4px;' data-reset='${u.id}' data-name='${u.full_name}'>🔐 Reset</button>\n            <button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${u.id}'>🗑️ Delete</button>\n          </td>\n        </tr>`;
+        html += `<tr style='background:${bgColor};border-radius:12px;'>\n          <td style='border-radius:8px 0 0 8px;padding:12px;'><strong style='display:block;'>${u.full_name}</strong><div class='text-muted' style='font-size:12px;'>${u.email}</div></td>\n          <td style='padding:12px;'>${u.department || '—'}</td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${annual}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #34d399 0%, #10b981 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${sick}</span></td>\n          <td style='border-radius:0 8px 8px 0;padding:12px;'>\n            <button class='btn btn-sm' style='background:#10b981;color:white;border:none;border-radius:6px;' data-edit='${u.id}'>✏️ Edit</button>\n            <button class='btn btn-sm' style='background:#f59e0b;color:white;border:none;border-radius:6px;margin-left:4px;' data-reset='${u.id}' data-name='${u.full_name}'>🔐 Reset</button>\n            <button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${u.id}'>🗑️ Delete</button>\n          </td>\n        </tr>`;
       });
       html += `</tbody></table></div>`;
       list.innerHTML = html;
@@ -227,11 +663,14 @@
       document.querySelectorAll('button[data-edit]').forEach(btn=> btn.onclick = async ()=>{
         const id = btn.getAttribute('data-edit');
         const u = users.find(x=> x.id==id);
-        const newDept = prompt('Department', u.department||'') || null;
-        const newRole = prompt('Role (employee/HOD/admin)', u.role) || u.role;
-        const newName = prompt('Full name', u.full_name) || u.full_name;
-        const res = await fetch('/api/users/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:newName, role:newRole, department:newDept})});
-        if(res.ok) { showToast('Updated'); await refreshUsers(); await refreshBalances(); } else showToast('Error');
+        // Populate modal with current user data
+        document.getElementById('editFullName').value = u.full_name;
+        document.getElementById('editEmail').value = u.email;
+        document.getElementById('editRole').value = u.role;
+        document.getElementById('editDept').value = u.department || '';
+        document.getElementById('editModal').dataset.userId = id;
+        document.getElementById('editModal').classList.remove('d-none');
+        setTimeout(()=> document.querySelector('#editModal .modal-fade').classList.add('show'),10);
       });
       document.querySelectorAll('button[data-reset]').forEach(btn=> btn.onclick = ()=>{
         const id = btn.getAttribute('data-reset'); const name = btn.getAttribute('data-name');
@@ -246,51 +685,26 @@
       });
     }
 
-    // Departments UI
-    async function refreshDepartments(){
-      const users = await (await fetch('/api/users')).json();
-      const hodSelect = document.getElementById('deptHod'); hodSelect.innerHTML = '<option value="">(No HOD)</option>';
-      users.forEach(u=>{ const opt = document.createElement('option'); opt.value = u.id; opt.textContent = `${u.full_name} (${u.email})`; hodSelect.appendChild(opt); });
-
-      const deps = await (await fetch('/api/departments')).json();
-      const container = document.getElementById('departmentsList'); container.innerHTML = '';
-      deps.forEach(d=>{
-        const row = document.createElement('div'); row.className = 'd-flex align-items-center justify-content-between';
-        row.style.cssText = 'padding:16px;background:linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);border-radius:12px;border-left:4px solid #667eea;margin-bottom:12px;';
-        row.innerHTML = `<div><strong style='font-size:16px;display:block;'>${d.name}</strong><div class='small text-muted'>👔 HOD: ${d.hod_name||'(none)'} ${d.hod_email?'<span class="text-muted">• '+d.hod_email+'</span>':''}</div></div><div><button class='btn btn-sm' style='background:#667eea;color:white;border:none;border-radius:6px;' data-edit='${d.id}'>✏️ Edit</button><button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${d.id}'>🗑️ Delete</button></div>`;
-        container.appendChild(row);
-      });
-
-      document.getElementById('createDept').onclick = async ()=>{
-        const name = document.getElementById('deptName').value.trim(); const hod = document.getElementById('deptHod').value || null;
-        if(!name) return alert('Enter department name');
-        const res = await fetch('/api/departments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name, hod_user_id: hod || null})});
-        if(res.ok){ document.getElementById('deptName').value=''; await refreshDepartments(); await refreshUsers(); } else alert(JSON.stringify(await res.json()));
-      };
-
-      document.querySelectorAll('button[data-edit]').forEach(btn=> btn.onclick = async ()=>{
-        const id = btn.getAttribute('data-edit');
-        const d = deps.find(x=> x.id==id);
-        const newName = prompt('Department name', d.name) || d.name;
-        const hod = prompt('HOD user id (empty to clear)', d.hod_user_id||'') || null;
-        const payload = { name: newName, hod_user_id: hod || null };
-        const res = await fetch('/api/departments/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-        if(res.ok) { await refreshDepartments(); await refreshUsers(); } else alert(JSON.stringify(await res.json()));
-      });
-
-      document.querySelectorAll('button[data-delete]').forEach(btn=> btn.onclick = async ()=>{
-        const id = btn.getAttribute('data-delete'); if(!confirm('Delete this department?')) return;
-        const res = await fetch('/api/departments/'+id, { method: 'DELETE' });
-        if(res.ok){ showToast('Department deleted'); await refreshDepartments(); await refreshUsers(); } else { alert(JSON.stringify(await res.json())); }
-      });
-    }
-
     // Theme toggle
     function applyTheme(){ if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark'); else document.body.classList.remove('dark'); }
     const themeBtn = document.getElementById('themeToggle'); if(themeBtn) themeBtn.onclick = ()=>{ const isDark = document.body.classList.toggle('dark'); localStorage.setItem('theme', isDark? 'dark':'light'); };
     applyTheme();
 
-    document.getElementById('logout').onclick = async ()=>{ await fetch('/api/logout',{method:'POST'}); location.href='/'; };
+    document.getElementById('logout').onclick = async (e)=>{
+      e.preventDefault();
+      if(!confirm('Are you sure you want to logout?')) return;
+      const btn = document.getElementById('logout');
+      btn.textContent = 'Logging out...';
+      btn.disabled = true;
+      try {
+        await fetch('/api/logout',{method:'POST'});
+        setTimeout(() => { location.href='/'; }, 300);
+      } catch(err) {
+        alert('Logout error: ' + err.message);
+        btn.textContent = 'Logout';
+        btn.disabled = false;
+      }
+    };
     load();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

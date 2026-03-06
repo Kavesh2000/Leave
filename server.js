@@ -2,623 +2,1201 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcryptjs');
-const sqlite3 = require('sqlite3').verbose();
+const { query, initPool } = require('./db');
 const path = require('path');
 
-const DB_PATH = path.join(__dirname, 'data.sqlite');
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'leave-secret', resave: false, saveUninitialized: false }));
 
-const db = new sqlite3.Database(DB_PATH);
+// database helper is initialized later with initPool()
+
 
 const HOLIDAYS = [
-  // ISO dates
   '2026-01-01',
   '2026-12-25'
 ];
 
-app.get('/api/holidays', (req,res)=>{
-  res.json(HOLIDAYS);
-});
-
-app.post('/api/calc_days', (req,res)=>{
-  const {start_date, end_date} = req.body;
-  if(!start_date || !end_date) return res.status(400).json({error:'missing dates'});
-  const days = countWorkingDays(start_date, end_date, HOLIDAYS);
-  res.json({days});
-});
-
-// Admin analytics: leave days per department
-app.get('/api/analytics/departments', requireAuth, (req,res)=>{
-  if(req.session.role!=='admin') return res.status(403).json({error:'forbidden'});
-  db.all(`SELECT u.department as department, SUM(lr.days) as days FROM leave_requests lr JOIN users u ON u.id=lr.user_id WHERE lr.status='admin_approved' GROUP BY u.department`, [], (e,rows)=>{
-    res.json(rows || []);
-  });
-});
-
-app.get('/api/analytics/types', requireAuth, (req,res)=>{
-  if(req.session.role!=='admin') return res.status(403).json({error:'forbidden'});
-  db.all(`SELECT lt.name as type, SUM(lr.days) as days FROM leave_requests lr JOIN leave_types lt ON lt.id=lr.leave_type_id WHERE lr.status='admin_approved' GROUP BY lt.name`, [], (e,rows)=>{
-    res.json(rows || []);
-  });
-});
-
-function initDb(){
-  db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS users(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      full_name TEXT,
-      email TEXT UNIQUE,
-      password_hash TEXT,
-      role TEXT,
-      department TEXT
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS departments(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT UNIQUE,
-      hod_user_id INTEGER
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS leave_types(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT,
-      default_days INTEGER,
-      editable INTEGER DEFAULT 1
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS user_leave_balances(
-      user_id INTEGER,
-      leave_type_id INTEGER,
-      remaining_days INTEGER,
-      PRIMARY KEY(user_id, leave_type_id)
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS leave_requests(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      leave_type_id INTEGER,
-      start_date TEXT,
-      end_date TEXT,
-      days INTEGER,
-      reason TEXT,
-      status TEXT,
-      hod_comment TEXT,
-      admin_comment TEXT,
-      created_at TEXT,
-      updated_at TEXT
-    )`);
-
-    // seed leave types
-    db.get(`SELECT COUNT(*) as c FROM leave_types`, (err,row)=>{
-      if(!err && row.c==0){
-        const stmt = db.prepare(`INSERT INTO leave_types(name, default_days, editable) VALUES(?,?,?)`);
-        stmt.run('Annual',21,1);
-        stmt.run('Sick',7,1);
-        stmt.finalize();
-      }
-    });
-
-    // seed admin/hod/employee users
-    db.get(`SELECT COUNT(*) as c FROM users`, (err,row)=>{
-      if(!err && row.c==0){
-        const pwd = bcrypt.hashSync('password',10);
-        const stmt = db.prepare(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`);
-        stmt.run('Alice Admin','admin@example.com',pwd,'admin',null);
-        stmt.run('Bob HOD','hod@example.com',pwd,'HOD','Engineering');
-        stmt.run('Dana HOD','hod2@example.com',pwd,'HOD','HR');
-        stmt.run('Charlie Employee','emp@example.com',pwd,'employee','Engineering');
-        stmt.finalize(() => {
-          // seed balances for each user and leave type
-          db.all(`SELECT id FROM users`, (e,users)=>{
-            db.all(`SELECT id,default_days FROM leave_types`, (ee,types)=>{
-              const ins = db.prepare(`INSERT OR REPLACE INTO user_leave_balances(user_id,leave_type_id,remaining_days) VALUES(?,?,?)`);
-              users.forEach(u=>{
-                types.forEach(t=> ins.run(u.id,t.id,t.default_days));
-              });
-              ins.finalize();
-              // create departments and assign HODs from seeded users
-              db.get(`SELECT id FROM users WHERE email = ?`, ['hod@example.com'], (err1, bob)=>{
-                db.get(`SELECT id FROM users WHERE email = ?`, ['hod2@example.com'], (err2, dana)=>{
-                  if(bob && bob.id){
-                    db.run(`INSERT OR REPLACE INTO departments(name, hod_user_id) VALUES(?,?)`, ['Engineering', bob.id]);
-                  }
-                  if(dana && dana.id){
-                    db.run(`INSERT OR REPLACE INTO departments(name, hod_user_id) VALUES(?,?)`, ['HR', dana.id]);
-                  }
-                });
-              });
-            });
-          });
-        });
-
-        // idempotent bulk-add requested departments and users
-        const bulkDepartments = {
-          'ICT': ['Stevaniah Kavela','Mercy Mukhwana','Eric Mokaya'],
-          'Branch': ['Caroline Ngugi','Lilian Kimani','Maureen Kerubo','Alice Muthoni','Michael Mureithi'],
-          'Finance': ['Patrick Ndegwa','Margaret Njeri','Elizabeth Mungai'],
-          'Customer Service': ['Juliana Jeptoo','Faith Bonareri','Patience Mutunga','Eva Mukami','Peter Kariuki']
-        };
-
-        function initBalancesForUser(userId){
-          db.all(`SELECT id, default_days FROM leave_types`, [], (e,types)=>{
-            if(e) return;
-            const ins = db.prepare(`INSERT OR REPLACE INTO user_leave_balances(user_id,leave_type_id,remaining_days) VALUES(?,?,?)`);
-            types.forEach(t=> ins.run(userId, t.id, t.default_days));
-            ins.finalize();
-          });
-        }
-
-        Object.keys(bulkDepartments).forEach(deptName=>{
-          // ensure department row exists
-          db.get(`SELECT id, hod_user_id FROM departments WHERE name = ?`, [deptName], (er,deptRow)=>{
-            if(er) return;
-            const ensureHodAndThen = (hodId)=>{
-              if(!deptRow){
-                db.run(`INSERT INTO departments(name, hod_user_id) VALUES(?,?)`, [deptName, hodId || null]);
-              }else if(hodId && deptRow.hod_user_id !== hodId){
-                db.run(`UPDATE departments SET hod_user_id = ? WHERE id = ?`, [hodId, deptRow.id]);
-              }
-            };
-
-            // ensure a HOD user exists for this department (create placeholder if missing)
-            const hodEmail = 'hod_'+deptName.replace(/\s+/g,'').toLowerCase() + '@example.com';
-            db.get(`SELECT id FROM users WHERE email = ?`, [hodEmail], (e2,urow)=>{
-              if(e2) return;
-              if(urow && urow.id){
-                ensureHodAndThen(urow.id);
-                // now add employees
-                bulkDepartments[deptName].forEach(name=>{
-                  const email = name.toLowerCase().replace(/\s+/g,'.') + '@example.com';
-                  db.get(`SELECT id FROM users WHERE email = ?`, [email], (ee,existing)=>{
-                    if(ee) return;
-                    if(existing && existing.id) return;
-                    const pwd = bcrypt.hashSync('password',10);
-                    db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [name,email,pwd,'employee',deptName], function(errIns){
-                      if(errIns) return;
-                      initBalancesForUser(this.lastID);
-                    });
-                  });
-                });
-              }else{
-                // create HOD placeholder
-                const pwd2 = bcrypt.hashSync('password',10);
-                db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [deptName+' HOD', hodEmail, pwd2, 'HOD', deptName], function(err3){
-                  if(err3) return;
-                  const hodId = this.lastID;
-                  ensureHodAndThen(hodId);
-                  initBalancesForUser(hodId);
-                  // create employees
-                  bulkDepartments[deptName].forEach(name=>{
-                    const email = name.toLowerCase().replace(/\s+/g,'.') + '@example.com';
-                    db.get(`SELECT id FROM users WHERE email = ?`, [email], (ee,existing)=>{
-                      if(ee) return;
-                      if(existing && existing.id) return;
-                      const pwd = bcrypt.hashSync('password',10);
-                      db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [name,email,pwd,'employee',deptName], function(errIns){
-                        if(errIns) return;
-                        initBalancesForUser(this.lastID);
-                      });
-                    });
-                  });
-                });
-              }
-            });
-          });
-        });
-      }
-    });
-  });
+function parseDate(d) {
+  return new Date(d + 'T00:00:00');
 }
 
-function parseDate(d){ return new Date(d+'T00:00:00'); }
-
-function countWorkingDays(start, end, holidays){
+function countWorkingDays(start, end, holidays) {
   let s = parseDate(start);
   let e = parseDate(end);
-  if(e < s) return 0;
+  if (e < s) return 0;
   let days = 0;
-  for(let d = new Date(s); d <= e; d.setDate(d.getDate()+1)){
+  for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
     const dow = d.getDay();
-    const iso = d.toISOString().slice(0,10);
-    if(dow===0||dow===6) continue; // weekend
-    if(holidays.includes(iso)) continue;
+    const iso = d.toISOString().slice(0, 10);
+    if (dow === 0 || dow === 6) continue;
+    if (holidays.includes(iso)) continue;
     days++;
   }
   return days;
 }
 
-function requireAuth(req,res,next){
-  if(req.session && req.session.userId) return next();
-  res.status(401).json({error:'unauthenticated'});
+function requireAuth(req, res, next) {
+  if (req.session && req.session.userId) return next();
+  res.status(401).json({ error: 'unauthenticated' });
 }
 
-function requireRole(role){
-  return (req,res,next)=>{
-    if(req.session && req.session.role===role) return next();
-    res.status(403).json({error:'forbidden'});
+function requireRole(role) {
+  return (req, res, next) => {
+    if (req.session && req.session.role === role) return next();
+    res.status(403).json({ error: 'forbidden' });
   };
 }
 
-app.post('/api/login', (req,res)=>{
-  const {email,password} = req.body;
-  db.get(`SELECT * FROM users WHERE email = ?`, [email], (err,user)=>{
-    if(err || !user) return res.status(400).json({error:'invalid'});
-    if(!bcrypt.compareSync(password, user.password_hash)) return res.status(400).json({error:'invalid'});
+async function logAudit(userId, userEmail, action, entityType, entityId, details = null) {
+  try {
+    await query(
+      `INSERT INTO audit_logs(user_id, user_email, action, entity_type, entity_id, details, timestamp)
+       VALUES($1,$2,$3,$4,$5,$6,$7)`,
+      [userId, userEmail, action, entityType, entityId, details, new Date()]
+    );
+  } catch (err) {
+    console.error('Audit logging error:', err);
+  }
+}
+
+async function initDb() {
+  try {
+    // create tables if they don't exist (T-SQL syntax)
+    await query(`
+      IF OBJECT_ID('users','U') IS NULL
+      CREATE TABLE users(
+        id INT IDENTITY PRIMARY KEY,
+        full_name NVARCHAR(200),
+        email NVARCHAR(200) UNIQUE,
+        password_hash NVARCHAR(255),
+        role NVARCHAR(50),
+        department NVARCHAR(50)
+      )
+    `);
+
+    await query(`
+      IF OBJECT_ID('department','U') IS NULL
+      CREATE TABLE department(
+        id INT IDENTITY PRIMARY KEY,
+        name NVARCHAR(100) UNIQUE,
+        hod_user_id INT NULL,
+        acting_hod_id INT NULL
+      )
+    `);
+
+    await query(`
+      IF OBJECT_ID('leave_type','U') IS NULL
+      CREATE TABLE leave_type(
+        id INT IDENTITY PRIMARY KEY,
+        name NVARCHAR(100) UNIQUE,
+        default_days INT,
+        editable BIT DEFAULT 1
+      )
+    `);
+
+    await query(`
+      IF OBJECT_ID('balance','U') IS NULL
+      CREATE TABLE balance(
+        user_id INT,
+        leave_type_id INT,
+        remaining_days INT,
+        PRIMARY KEY(user_id, leave_type_id)
+      )
+    `);
+
+    await query(`
+      IF OBJECT_ID('leave_requests','U') IS NULL
+      CREATE TABLE leave_requests(
+        id INT IDENTITY PRIMARY KEY,
+        user_id INT,
+        leave_type_id INT,
+        start_date NVARCHAR(20),
+        end_date NVARCHAR(20),
+        days INT,
+        reason NVARCHAR(1000),
+        status NVARCHAR(50),
+        hod_comment NVARCHAR(1000),
+        admin_comment NVARCHAR(1000),
+        created_at DATETIME2,
+        updated_at DATETIME2
+      )
+    `);
+
+    await query(`
+      IF OBJECT_ID('audit_logs','U') IS NULL
+      CREATE TABLE audit_logs(
+        id BIGINT IDENTITY PRIMARY KEY,
+        user_id INT NULL,
+        user_email NVARCHAR(200) NULL,
+        action NVARCHAR(100),
+        entity_type NVARCHAR(100),
+        entity_id INT NULL,
+        details NVARCHAR(2000) NULL,
+        timestamp DATETIME2 DEFAULT SYSUTCDATETIME()
+      )
+    `);
+
+    // check for existing admin
+    const adminCheck = await query("SELECT COUNT(*) AS cnt FROM users WHERE role='admin'");
+    if (adminCheck.recordset[0].cnt > 0) {
+      console.log('Database already initialized');
+      return;
+    }
+
+    // seed leave types
+    await query(
+      `IF NOT EXISTS (SELECT 1 FROM leave_type WHERE name=@p0)
+           INSERT INTO leave_type(name,default_days,editable) VALUES(@p0,@p1,@p2)`,
+      ['Annual', 21, 1]
+    );
+    await query(
+      `IF NOT EXISTS (SELECT 1 FROM leave_type WHERE name=@p0)
+           INSERT INTO leave_type(name,default_days,editable) VALUES(@p0,@p1,@p2)`,
+      ['Sick', 7, 1]
+    );
+    console.log('Seeded leave types');
+
+    // seed admin user
+    const pwd = bcrypt.hashSync('1234', 10);
+    await query(
+      `INSERT INTO users(full_name,email,password_hash,role,department) VALUES(@p0,@p1,@p2,@p3,@p4)`,
+      ['System Admin', 'automation@maishabank.com', pwd, 'admin', null]
+    );
+
+    console.log('Database initialized and seeded');
+  } catch (err) {
+    console.error('initDb error:', err);
+  }
+}
+
+// ===== HOLIDAYS =====
+
+app.get('/api/holidays', (req, res) => {
+  res.json(HOLIDAYS);
+});
+
+// ===== AUTHENTICATION =====
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const result = await query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+    const user = result.recordset[0];
+    if (!user) return res.status(400).json({ error: 'invalid' });
+    const storedHash = user.password_hash || user.password || null;
+    if (!storedHash || !bcrypt.compareSync(password, storedHash)) {
+      return res.status(400).json({ error: 'invalid' });
+    }
+
     req.session.userId = user.id;
+    req.session.userEmail = user.email;
     req.session.role = user.role;
-    req.session.department = user.department;
-    res.json({id:user.id,full_name:user.full_name,role:user.role,department:user.department});
+    // support legacy schema where department may be stored as department_id
+    req.session.department = user.department || (user.department_id ? String(user.department_id) : null);
+
+    res.json({
+      id: user.id,
+      full_name: user.full_name,
+      role: user.role,
+      department: req.session.department
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.json({ ok: true });
   });
 });
 
-app.post('/api/logout', (req,res)=>{ req.session.destroy(()=>res.json({ok:true})); });
+// ===== PROFILE =====
 
-app.get('/api/me', requireAuth, (req,res)=>{
-  db.get(`SELECT id,full_name,email,role,department FROM users WHERE id = ?`, [req.session.userId], (e,u)=>{
-    res.json(u);
-  });
+app.get('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, full_name, email, role, department FROM users WHERE id = $1',
+      [req.session.userId]
+    );
+    if (!result.recordset[0]) return res.status(404).json({ error: 'not found' });
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
 });
 
-app.post('/api/apply', requireAuth, (req,res)=>{
-  const {leave_type_id,start_date,end_date,reason} = req.body;
-  const days = countWorkingDays(start_date,end_date,HOLIDAYS);
-  if(days<=0) return res.status(400).json({error:'invalid date range'});
-  // check balance
-  db.get(`SELECT remaining_days FROM user_leave_balances WHERE user_id=? AND leave_type_id=?`, [req.session.userId, leave_type_id], (err,row)=>{
-    if(err || !row) return res.status(400).json({error:'no balance'});
-    if(row.remaining_days < days) return res.status(400).json({error:'insufficient balance'});
-    const now = new Date().toISOString();
-    db.run(`INSERT INTO leave_requests(user_id,leave_type_id,start_date,end_date,days,reason,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)`,
-      [req.session.userId,leave_type_id,start_date,end_date,days,reason,'pending',now,now], function(err){
-        if(err) return res.status(500).json({error:'db'});
-        res.json({ok:true,id:this.lastID});
-      });
-  });
+app.get('/api/me', requireAuth, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, full_name, email, role, department FROM users WHERE id = $1',
+      [req.session.userId]
+    );
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
 });
 
-app.get('/api/leave_requests', requireAuth, (req,res)=>{
+
+
+// ===== LEAVE REQUESTS =====
+
+app.post('/api/leave_requests', requireAuth, async (req, res) => {
+  const { leave_type_id, start_date, end_date, reason } = req.body;
+  const days = countWorkingDays(start_date, end_date, HOLIDAYS);
+  if (days <= 0) return res.status(400).json({ error: 'invalid date range' });
+
+  try {
+    const balanceResult = await query(
+      'SELECT remaining_days FROM balance WHERE user_id = $1 AND leave_type_id = $2',
+      [req.session.userId, leave_type_id]
+    );
+    const balance = balanceResult.recordset[0];
+    if (!balance) return res.status(400).json({ error: 'no balance' });
+    if (balance.remaining_days < days) {
+      return res.status(400).json({ error: 'insufficient balance' });
+    }
+
+    const now = new Date();
+    const insertResult = await query(
+      `INSERT INTO leave_requests(user_id, leave_type_id, start_date, end_date, days, reason, status, created_at, updated_at)
+       OUTPUT INSERTED.id AS id
+       VALUES($1,$2,$3,$4,$5,$6,'pending',$7,$7)`,
+      [req.session.userId, leave_type_id, start_date, end_date, days, reason, now]
+    );
+    const requestId = insertResult.recordset[0].id;
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'CREATE',
+      'leave_request',
+      requestId,
+      `Submitted leave request: ${days} days from ${start_date} to ${end_date}`
+    );
+    res.json({ ok: true, id: requestId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.post('/api/apply', requireAuth, async (req, res) => {
+  const { leave_type_id, start_date, end_date, reason } = req.body;
+  const days = countWorkingDays(start_date, end_date, HOLIDAYS);
+  if (days <= 0) return res.status(400).json({ error: 'invalid date range' });
+
+  try {
+    const balanceResult = await query(
+      'SELECT remaining_days FROM balance WHERE user_id = $1 AND leave_type_id = $2',
+      [req.session.userId, leave_type_id]
+    );
+    const balance = balanceResult.recordset[0];
+    if (!balance) return res.status(400).json({ error: 'no balance' });
+    if (balance.remaining_days < days) {
+      return res.status(400).json({ error: 'insufficient balance' });
+    }
+
+    const now = new Date();
+    const insertResult = await query(
+      `INSERT INTO leave_requests(user_id, leave_type_id, start_date, end_date, days, reason, status, created_at, updated_at)
+       OUTPUT INSERTED.id AS id
+       VALUES($1,$2,$3,$4,$5,$6,'pending',$7,$7)`,
+      [req.session.userId, leave_type_id, start_date, end_date, days, reason, now]
+    );
+    const requestId = insertResult.recordset[0].id;
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'CREATE',
+      'leave_request',
+      requestId,
+      `Submitted leave request: ${days} days from ${start_date} to ${end_date}`
+    );
+    res.json({ ok: true, id: requestId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.get('/api/leave_requests', requireAuth, async (req, res) => {
   const role = req.session.role;
-  if(role==='employee'){
-    db.all(`SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr JOIN users u ON u.id=lr.user_id JOIN leave_types lt ON lt.id=lr.leave_type_id WHERE lr.user_id=? ORDER BY lr.created_at DESC`, [req.session.userId], (e,rows)=> res.json(rows));
-  }else if(role==='HOD'){
-    // HOD sees pending requests AND their approval history from their department
-    db.all(`SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr JOIN users u ON u.id=lr.user_id JOIN leave_types lt ON lt.id=lr.leave_type_id WHERE u.department = ? ORDER BY lr.created_at DESC`, [req.session.department], (e,rows)=> res.json(rows));
-  }else if(role==='admin'){
-    // admin sees all requests for review and approval history
-    db.all(`SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr JOIN users u ON u.id=lr.user_id JOIN leave_types lt ON lt.id=lr.leave_type_id ORDER BY lr.created_at DESC`, [], (e,rows)=> res.json(rows));
+  try {
+    let result;
+    if (role === 'employee') {
+      result = await query(
+        `SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr
+         JOIN users u ON u.id=lr.user_id
+         JOIN leave_type lt ON lt.id=lr.leave_type_id
+         WHERE lr.user_id = $1 ORDER BY lr.created_at DESC`,
+        [req.session.userId]
+      );
+    } else if (role === 'HOD') {
+      result = await query(
+        `SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr
+         JOIN users u ON u.id=lr.user_id
+         JOIN leave_type lt ON lt.id=lr.leave_type_id
+         WHERE u.department = $1 ORDER BY lr.created_at DESC`,
+        [req.session.department]
+      );
+    } else if (role === 'admin') {
+      result = await query(
+        `SELECT lr.*, u.full_name, lt.name as leave_type, COALESCE(b.remaining_days, lt.default_days) as remaining_days
+         FROM leave_requests lr
+         JOIN users u ON u.id=lr.user_id
+         JOIN leave_type lt ON lt.id=lr.leave_type_id
+         LEFT JOIN balance b ON b.user_id=lr.user_id AND b.leave_type_id=lr.leave_type_id
+         ORDER BY lr.created_at DESC`
+      );
+    }
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
   }
 });
 
-app.post('/api/leave_requests/:id/hod_action', requireAuth, (req,res)=>{
-  if(req.session.role!=='HOD') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id; const {action,comment} = req.body;
-  db.get(`SELECT lr.*, u.department FROM leave_requests lr JOIN users u ON u.id=lr.user_id WHERE lr.id=?`, [id], (e,lr)=>{
-    if(e || !lr) return res.status(404).json({error:'not found'});
-    if(lr.department !== req.session.department) return res.status(403).json({error:'not your dept'});
-    if(action==='approve'){
-      db.run(`UPDATE leave_requests SET status='hod_approved', hod_comment=?, updated_at=? WHERE id=?`, [comment, new Date().toISOString(), id], function(err){
-        if(err) return res.status(500).json({error:'db'});
-        res.json({ok:true});
-      });
-    }else{
-      db.run(`UPDATE leave_requests SET status='rejected', hod_comment=?, updated_at=? WHERE id=?`, [comment, new Date().toISOString(), id], function(err){
-        if(err) return res.status(500).json({error:'db'});
-        res.json({ok:true});
+app.post('/api/leave_requests/:id/hod_action', requireAuth, async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { action, comment } = req.body;
+
+  try {
+    const result = await query(
+      `SELECT lr.*, u.department FROM leave_requests lr
+       JOIN users u ON u.id=lr.user_id WHERE lr.id = $1`,
+      [id]
+    );
+
+    const lr = result.recordset[0];
+    if (!lr) return res.status(404).json({ error: 'not found' });
+
+    const deptRes = await query(
+      `SELECT hod_user_id, acting_hod_id FROM department WHERE name = $1`,
+      [lr.department]
+    );
+    const dept = (deptRes.recordset && deptRes.recordset[0]) || {};
+    const allowedUserIds = [dept.hod_user_id, dept.acting_hod_id].filter(Boolean);
+    if (!allowedUserIds.includes(req.session.userId)) {
+      return res.status(403).json({ error: 'not authorized for this department' });
+    }
+
+    if (lr.status !== 'pending') {
+      return res.status(400).json({
+        error: `Cannot approve/reject: request must be in "pending" status, currently: "${lr.status}"`
       });
     }
-  });
+
+    const now = new Date();
+    if (action === 'approve') {
+      await query(
+        `UPDATE leave_requests SET status='hod_approved', hod_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'APPROVE',
+        'leave_request',
+        id,
+        `HOD approved leave request ${id}. Comment: ${comment}`
+      );
+      res.json({ ok: true });
+    } else if (action === 'reject') {
+      await query(
+        `UPDATE leave_requests SET status='rejected', hod_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'REJECT',
+        'leave_request',
+        id,
+        `HOD rejected leave request ${id}. Comment: ${comment}`
+      );
+      res.json({ ok: true });
+    } else {
+      res.status(400).json({ error: 'invalid action' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
 });
 
-app.post('/api/leave_requests/:id/admin_action', requireAuth, (req,res)=>{
-  if(req.session.role!=='admin') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id; const {action,comment} = req.body;
-  db.get(`SELECT * FROM leave_requests WHERE id=?`, [id], (e,lr)=>{
-    if(e || !lr) return res.status(404).json({error:'not found'});
-    if(action==='approve'){
-      // deduct balance
-      db.get(`SELECT remaining_days FROM user_leave_balances WHERE user_id=? AND leave_type_id=?`, [lr.user_id, lr.leave_type_id], (err,row)=>{
-        if(err || !row) return res.status(400).json({error:'no balance'});
-        if(row.remaining_days < lr.days) return res.status(400).json({error:'insufficient balance'});
-        const newRem = row.remaining_days - lr.days;
-        db.run(`UPDATE user_leave_balances SET remaining_days=? WHERE user_id=? AND leave_type_id=?`, [newRem, lr.user_id, lr.leave_type_id], function(er){
-          if(er) return res.status(500).json({error:'db'});
-          db.run(`UPDATE leave_requests SET status='admin_approved', admin_comment=?, updated_at=? WHERE id=?`, [comment, new Date().toISOString(), id], function(err2){
-            if(err2) return res.status(500).json({error:'db'});
-            res.json({ok:true});
-          });
+app.post('/api/leave_requests/:id/admin_action', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+  const { action, comment } = req.body;
+
+  try {
+    const result = await query(
+      `SELECT * FROM leave_requests WHERE id = $1`,
+      [id]
+    );
+
+    const lr = result.recordset[0];
+    if (!lr) return res.status(404).json({ error: 'not found' });
+
+    const now = new Date();
+    if (action === 'approve') {
+      if (lr.status !== 'hod_approved') {
+        return res.status(400).json({
+          error: `Cannot approve: request must be in "hod_approved" status, currently: "${lr.status}"`
         });
-      });
-    }else{
-      db.run(`UPDATE leave_requests SET status='rejected', admin_comment=?, updated_at=? WHERE id=?`, [comment, new Date().toISOString(), id], function(err){
-        if(err) return res.status(500).json({error:'db'});
-        res.json({ok:true});
+      }
+
+      const balanceResult = await query(
+        `SELECT remaining_days FROM balance WHERE user_id = $1 AND leave_type_id = $2`,
+        [lr.user_id, lr.leave_type_id]
+      );
+
+      const balance = balanceResult.recordset[0];
+      if (!balance) return res.status(400).json({ error: 'no balance' });
+      if (balance.remaining_days < lr.days) {
+        return res.status(400).json({ error: 'insufficient balance' });
+      }
+
+      const newRem = balance.remaining_days - lr.days;
+      await query(
+        `UPDATE balance SET remaining_days = $1 WHERE user_id = $2 AND leave_type_id = $3`,
+        [newRem, lr.user_id, lr.leave_type_id]
+      );
+
+      await query(
+        `UPDATE leave_requests SET status='admin_approved', admin_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'APPROVE',
+        'leave_request',
+        id,
+        `Admin approved leave request ${id}. Comment: ${comment}`
+      );
+      res.json({ ok: true });
+    } else if (action === 'reject') {
+      await query(
+        `UPDATE leave_requests SET status='rejected', admin_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'REJECT',
+        'leave_request',
+        id,
+        `Admin rejected leave request ${id}. Comment: ${comment}`
+      );
+      res.json({ ok: true });
+    } else {
+      res.status(400).json({ error: 'invalid action' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== BALANCES =====
+
+app.get('/api/balances', requireAuth, async (req, res) => {
+  try {
+    let result;
+    if (req.session.role === 'admin') {
+      result = await query(
+        `SELECT b.*, u.full_name, u.department, lt.name as leave_type FROM balance b
+         JOIN users u ON u.id=b.user_id
+         JOIN leave_type lt ON lt.id=b.leave_type_id`
+      );
+    } else {
+      result = await query(
+        `SELECT b.*, u.full_name, u.department, lt.name as leave_type FROM balance b
+         JOIN users u ON u.id=b.user_id
+         JOIN leave_type lt ON lt.id=b.leave_type_id
+         WHERE user_id = $1`,
+        [req.session.userId]
+      );
+    }
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.put('/api/balances/:userId/:leaveTypeId', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const userId = parseInt(req.params.userId);
+  const leaveTypeId = parseInt(req.params.leaveTypeId);
+  const { remaining_days } = req.body;
+
+  try {
+    await query(
+      `MERGE balance AS target
+         USING (VALUES(@p0,@p1,@p2)) AS src(user_id, leave_type_id, remaining_days)
+         ON target.user_id = src.user_id AND target.leave_type_id = src.leave_type_id
+         WHEN MATCHED THEN UPDATE SET remaining_days = src.remaining_days
+         WHEN NOT MATCHED THEN INSERT(user_id, leave_type_id, remaining_days) VALUES(src.user_id, src.leave_type_id, src.remaining_days);`,
+      [userId, leaveTypeId, remaining_days]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== LEAVE TYPES =====
+
+app.get('/api/leave_types', requireAuth, async (req, res) => {
+  try {
+    const result = await query(`SELECT * FROM leave_type`);
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== DEPARTMENTS =====
+
+app.get('/api/departments', requireAuth, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT d.id, d.name, d.hod_user_id, u.full_name as hod_name, u.email as hod_email
+       FROM department d
+       LEFT JOIN users u ON u.id=d.hod_user_id
+       ORDER BY d.name`
+    );
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.post('/api/departments', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const { name, hod_user_id } = req.body;
+  if (!name) return res.status(400).json({ error: 'missing name' });
+
+  try {
+    if (hod_user_id) {
+      const userCheck = await query(
+        `SELECT id FROM users WHERE id = $1`,
+        [hod_user_id]
+      );
+      if (userCheck.recordset.length === 0) {
+        return res.status(400).json({ error: 'invalid hod_user_id' });
+      }
+    }
+
+    const insert = await query(
+      `INSERT INTO department(name, hod_user_id)
+       OUTPUT INSERTED.id AS id
+       VALUES ($1, $2)`,
+      [name, hod_user_id || null]
+    );
+    res.json({ ok: true, id: insert.recordset[0].id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.put('/api/departments/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+  const { name, hod_user_id } = req.body;
+
+  try {
+    if (hod_user_id) {
+      const userCheck = await query(
+        `SELECT id FROM users WHERE id = $1`,
+        [hod_user_id]
+      );
+      if (userCheck.recordset.length === 0) {
+        return res.status(400).json({ error: 'invalid hod_user_id' });
+      }
+    }
+
+    await query(
+      `UPDATE department SET name = $1, hod_user_id = $2 WHERE id = $3`,
+      [name, hod_user_id || null, id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.delete('/api/departments/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+
+  try {
+    const deptResult = await query(
+      `SELECT name FROM department WHERE id = $1`,
+      [id]
+    );
+
+    if (!deptResult.recordset || deptResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    const deptName = deptResult.recordset[0].name;
+    const countResult = await query(
+      `SELECT COUNT(*) as c FROM users WHERE department = $1`,
+      [deptName]
+    );
+
+    if (countResult.recordset[0].c > 0) {
+      return res.status(400).json({
+        error: 'department has users; reassign or remove them first'
       });
     }
-  });
-});
 
-app.get('/api/balances', requireAuth, (req,res)=>{
-  if(req.session.role==='admin'){
-    db.all(`SELECT ulb.*, u.full_name, lt.name as leave_type FROM user_leave_balances ulb JOIN users u ON u.id=ulb.user_id JOIN leave_types lt ON lt.id=ulb.leave_type_id`, [], (e,rows)=> res.json(rows));
-  }else{
-    db.all(`SELECT ulb.*, lt.name as leave_type FROM user_leave_balances ulb JOIN leave_types lt ON lt.id=ulb.leave_type_id WHERE user_id=?`, [req.session.userId], (e,rows)=> res.json(rows));
+    await query(`DELETE FROM department WHERE id = $1`, [id]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
   }
 });
 
-app.put('/api/balances/:userId/:leaveTypeId', requireAuth, (req,res)=>{
-  if(req.session.role!=='admin') return res.status(403).json({error:'forbidden'});
-  const {userId, leaveTypeId} = req.params; const {remaining_days} = req.body;
-  db.run(`INSERT OR REPLACE INTO user_leave_balances(user_id,leave_type_id,remaining_days) VALUES(?,?,?)`, [userId, leaveTypeId, remaining_days], function(err){
-    if(err) return res.status(500).json({error:'db'});
-    res.json({ok:true});
-  });
-});
-
-app.get('/api/leave_types', requireAuth, (req,res)=>{
-  db.all(`SELECT * FROM leave_types`, [], (e,rows)=> res.json(rows));
-});
-
-// Departments endpoints (admin only)
-app.get('/api/departments', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  db.all(`SELECT d.id, d.name, d.hod_user_id, u.full_name as hod_name, u.email as hod_email FROM departments d LEFT JOIN users u ON u.id=d.hod_user_id ORDER BY d.name`, [], (err,rows)=>{
-    if(err) return res.status(500).json({error:'db'});
-    res.json(rows || []);
-  });
-});
-
-app.post('/api/departments', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const {name, hod_user_id} = req.body;
-  if(!name) return res.status(400).json({error:'missing name'});
-  if(hod_user_id){
-    db.get(`SELECT id FROM users WHERE id = ?`, [hod_user_id], (err,u)=>{
-      if(err || !u) return res.status(400).json({error:'invalid hod_user_id'});
-      db.run(`INSERT INTO departments(name, hod_user_id) VALUES(?,?)`, [name, hod_user_id], function(e2){ if(e2) return res.status(500).json({error:'db'}); res.json({ok:true,id:this.lastID}); });
-    });
-  }else{
-    db.run(`INSERT INTO departments(name, hod_user_id) VALUES(?,?)`, [name, null], function(e2){ if(e2) return res.status(500).json({error:'db'}); res.json({ok:true,id:this.lastID}); });
+app.post('/api/departments/:id/acting_hod', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+  const { user_id } = req.body;
+  try {
+    await query(
+      `UPDATE department SET acting_hod_id = $1 WHERE id = $2`,
+      [user_id || null, id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
   }
 });
 
-app.put('/api/departments/:id', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id; const {name, hod_user_id} = req.body;
-  if(hod_user_id){
-    db.get(`SELECT id FROM users WHERE id = ?`, [hod_user_id], (err,u)=>{
-      if(err || !u) return res.status(400).json({error:'invalid hod_user_id'});
-      db.run(`UPDATE departments SET name = ?, hod_user_id = ? WHERE id = ?`, [name, hod_user_id, id], function(e2){ if(e2) return res.status(500).json({error:'db'}); res.json({ok:true}); });
-    });
-  }else{
-    db.run(`UPDATE departments SET name = ?, hod_user_id = NULL WHERE id = ?`, [name, id], function(e2){ if(e2) return res.status(500).json({error:'db'}); res.json({ok:true}); });
+// ===== HOD FEATURES =====
+
+app.get('/api/department/employees', requireAuth, async (req, res) => {
+  try {
+    if (req.session.role !== 'HOD') {
+      return res.status(403).json({ error: 'forbidden' });
+    }
+
+    const department = req.session.department;
+    if (!department) return res.status(400).json({ error: 'department not set' });
+
+    const empResult = await query(
+      `SELECT id, full_name, email FROM users WHERE department = $1 AND role = 'employee' ORDER BY full_name`,
+      [department]
+    );
+
+    const employees = (empResult && empResult.recordset) || [];
+
+    const employeesWithBalances = await Promise.all(
+      employees.map(async (emp) => {
+        const balanceResult = await query(
+          `SELECT lt.name, COALESCE(b.remaining_days, lt.default_days) as days
+           FROM leave_type lt
+           LEFT JOIN balance b ON b.user_id = $1 AND b.leave_type_id = lt.id`,
+          [emp.id]
+        );
+
+        const leave_balances = {};
+        ((balanceResult && balanceResult.recordset) || []).forEach(row => {
+          leave_balances[row.name] = row.days;
+        });
+
+        return {
+          id: emp.id,
+          full_name: emp.full_name,
+          email: emp.email,
+          leave_balances
+        };
+      })
+    );
+
+    res.json(employeesWithBalances);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
   }
 });
 
-app.delete('/api/departments/:id', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id;
-  // ensure no users assigned to this department
-  db.get(`SELECT name FROM departments WHERE id = ?`, [id], (err,row)=>{
-    if(err || !row) return res.status(404).json({error:'not found'});
-    const deptName = row.name;
-    db.get(`SELECT COUNT(*) as c FROM users WHERE department = ?`, [deptName], (e,crow)=>{
-      if(e) return res.status(500).json({error:'db'});
-      if(crow && crow.c > 0) return res.status(400).json({error:'department has users; reassign or remove them first'});
-      db.run(`DELETE FROM departments WHERE id = ?`, [id], function(er){ if(er) return res.status(500).json({error:'db'}); res.json({ok:true}); });
-    });
-  });
+app.get('/api/department/leave-records', requireAuth, async (req, res) => {
+  try {
+    if (req.session.role !== 'HOD') {
+      return res.status(403).json({ error: 'forbidden' });
+    }
+
+    const department = req.session.department;
+    if (!department) return res.status(400).json({ error: 'department not set' });
+
+    const result = await query(
+      `SELECT lr.id, lr.days, lr.start_date, lr.end_date, lr.reason, lr.status,
+              u.full_name, u.email, lt.name as leave_type
+       FROM leave_requests lr
+       JOIN users u ON u.id = lr.user_id
+       JOIN leave_type lt ON lt.id = lr.leave_type_id
+       WHERE u.department = $1
+       ORDER BY lr.created_at DESC`,
+      [department]
+    );
+
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
 });
 
-// Admin: create user (admin-only)
-app.post('/api/users', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const {full_name, email, password, role, department} = req.body;
-  if(!full_name || !email || !password || !role) return res.status(400).json({error:'missing fields'});
+// ===== USERS =====
+
+app.post('/api/users', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const { full_name, email, password, role, department } = req.body;
+  if (!full_name || !email || !password || !role) {
+    return res.status(400).json({ error: 'missing fields' });
+  }
   const pwdHash = bcrypt.hashSync(password, 10);
 
-  // helpers
-  const initBalances = (userId, cb)=>{
-    db.all(`SELECT id, default_days FROM leave_types`, [], (e,types)=>{
-      if(e) return cb(e);
-      const ins = db.prepare(`INSERT OR REPLACE INTO user_leave_balances(user_id,leave_type_id,remaining_days) VALUES(?,?,?)`);
-      types.forEach(t=> ins.run(userId, t.id, t.default_days));
-      ins.finalize(()=> cb(null));
-    });
-  };
-
-  if(role === 'admin'){
-    db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [full_name,email,pwdHash,role,null], function(err){
-      if(err){ if(err.code === 'SQLITE_CONSTRAINT') return res.status(400).json({error:'email exists'}); return res.status(500).json({error:'db'}); }
-      const newUserId = this.lastID;
-      initBalances(newUserId, ()=> res.json({ok:true,id:newUserId}));
-    });
-    return;
-  }
-
-  if(role === 'HOD'){
-    if(!department) return res.status(400).json({error:'HOD must have a department'});
-    // check department doesn't already have HOD
-    db.get(`SELECT hod_user_id FROM departments WHERE name = ?`, [department], (err,deptRow)=>{
-      if(err) return res.status(500).json({error:'db'});
-      if(deptRow && deptRow.hod_user_id) return res.status(400).json({error:'department already has HOD'});
-      // insert user
-      db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [full_name,email,pwdHash,role,department], function(err2){
-        if(err2){ if(err2.code === 'SQLITE_CONSTRAINT') return res.status(400).json({error:'email exists'}); return res.status(500).json({error:'db'}); }
-        const newUserId = this.lastID;
-        // create or update department to assign this HOD
-        db.run(`INSERT OR REPLACE INTO departments(name, hod_user_id) VALUES(?,?)`, [department, newUserId], (er)=>{
-          if(er) return res.status(500).json({error:'db'});
-          initBalances(newUserId, ()=> res.json({ok:true,id:newUserId}));
-        });
-      });
-    });
-
-    // Explicit seeding for provided list with HOD markers
-    const explicitDepartments = {
-      'ICT': [
-        {name: 'Stevaniah Kavela'},
-        {name: 'Mercy Mukhwana'},
-        {name: 'Eric Mokaya', hod: true}
-      ],
-      'Branch': [
-        {name: 'Caroline Ngugi'},
-        {name: 'Lilian Kimani'},
-        {name: 'Maureen Kerubo'},
-        {name: 'Alice Muthoni'},
-        {name: 'Michael Mureithi', hod: true}
-      ],
-      'Finance': [
-        {name: 'Patrick Ndegwa'},
-        {name: 'Margaret Njeri'},
-        {name: 'Elizabeth Mungai', hod: true}
-      ],
-      'Customer Service': [
-        {name: 'Juliana Jeptoo'},
-        {name: 'Faith Bonareri'},
-        {name: 'Patience Mutunga', hod: true},
-        {name: 'Eva Mukami'},
-        {name: 'Peter Kariuki'}
-      ]
+  try {
+    const initBalances = async (userId) => {
+      const types = await query(`SELECT id, default_days FROM leave_type`);
+      for (const t of types.recordset) {
+        await query(
+          `MERGE balance AS target
+             USING (VALUES(@p0,@p1,@p2)) AS src(user_id, leave_type_id, remaining_days)
+             ON target.user_id = src.user_id AND target.leave_type_id = src.leave_type_id
+             WHEN MATCHED THEN UPDATE SET remaining_days = src.remaining_days
+             WHEN NOT MATCHED THEN INSERT(user_id, leave_type_id, remaining_days) VALUES(src.user_id, src.leave_type_id, src.remaining_days);`,
+          [userId, t.id, t.default_days]
+        );
+      }
     };
 
-    function ensureUser(name, role, dept, cb){
-      const email = name.toLowerCase().replace(/\s+/g,'.') + '@example.com';
-      db.get(`SELECT id, role FROM users WHERE email = ?`, [email], (e,row)=>{
-        if(e) return cb(e);
-        if(row && row.id){
-          // if role needs update (e.g., promoted to HOD), update
-          if(row.role !== role){
-            db.run(`UPDATE users SET role = ?, department = ? WHERE id = ?`, [role, dept, row.id], (er)=>{ initBalancesForUser(row.id); cb(null, row.id); });
-          }else{
-            // ensure department set
-            db.run(`UPDATE users SET department = ? WHERE id = ?`, [dept, row.id], ()=>{ initBalancesForUser(row.id); cb(null, row.id); });
-          }
-        }else{
-          const pwd = bcrypt.hashSync('password',10);
-          db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [name,email,pwd,role,dept], function(errIns){ if(errIns) return cb(errIns); initBalancesForUser(this.lastID); cb(null, this.lastID); });
-        }
+    if (role === 'admin') {
+      const result = await query(
+        `INSERT INTO users(full_name, email, password_hash, role, department)
+         OUTPUT INSERTED.id AS id
+         VALUES ($1, $2, $3, $4, NULL)`,
+        [full_name, email, pwdHash, role]
+      );
+      const newUserId = result.recordset[0].id;
+      await initBalances(newUserId);
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'CREATE',
+        'user',
+        newUserId,
+        `Created admin user: ${full_name} (${email})`
+      );
+      return res.json({ ok: true, id: newUserId });
+    }
+
+    if (role === 'HOD') {
+      if (!department) return res.status(400).json({ error: 'HOD must have a department' });
+      const deptCheck = await query(
+        `SELECT hod_user_id FROM department WHERE name = $1`,
+        [department]
+      );
+      if (deptCheck.recordset.length > 0 && deptCheck.recordset[0].hod_user_id) {
+        return res.status(400).json({ error: 'department already has HOD' });
+      }
+
+      const result = await query(
+        `INSERT INTO users(full_name, email, password_hash, role, department)
+         OUTPUT INSERTED.id AS id
+         VALUES ($1, $2, $3, $4, $5)`,
+        [full_name, email, pwdHash, role, department]
+      );
+      const newUserId = result.recordset[0].id;
+      await query(
+        `MERGE department AS target
+           USING (VALUES(@p0,@p1)) AS src(name, hod_user_id)
+           ON target.name = src.name
+           WHEN MATCHED THEN UPDATE SET hod_user_id = src.hod_user_id
+           WHEN NOT MATCHED THEN INSERT(name, hod_user_id) VALUES(src.name, src.hod_user_id);`,
+        [department, newUserId]
+      );
+      await initBalances(newUserId);
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'CREATE',
+        'user',
+        newUserId,
+        `Created HOD: ${full_name} (${email}) for department ${department}`
+      );
+      return res.json({ ok: true, id: newUserId });
+    }
+
+    if (!department) return res.status(400).json({ error: 'employee must have a department' });
+    const deptCheck = await query(
+      `SELECT hod_user_id FROM department WHERE name = $1`,
+      [department]
+    );
+    if (deptCheck.recordset.length === 0 || !deptCheck.recordset[0].hod_user_id) {
+      return res.status(400).json({ error: 'department must exist and have a HOD' });
+    }
+
+    const result = await query(
+      `INSERT INTO users(full_name, email, password_hash, role, department)
+       OUTPUT INSERTED.id AS id
+       VALUES ($1, $2, $3, $4, $5)`,
+      [full_name, email, pwdHash, role, department]
+    );
+    const newUserId = result.recordset[0].id;
+    await initBalances(newUserId);
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'CREATE',
+      'user',
+      newUserId,
+      `Created employee: ${full_name} (${email}) in department ${department}`
+    );
+    res.json({ ok: true, id: newUserId });
+  } catch (err) {
+    console.error(err);
+    if (err.code === '23505') return res.status(400).json({ error: 'email exists' });
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.get('/api/users', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  try {
+    const result = await query(
+      `SELECT id, full_name, email, role, department FROM users ORDER BY full_name`
+    );
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.put('/api/users/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+  const { full_name, role, department } = req.body;
+
+  try {
+    const currentResult = await query(
+      `SELECT * FROM users WHERE id = $1`,
+      [id]
+    );
+    if (!currentResult.recordset || currentResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    const user = currentResult.recordset[0];
+    const userEmail = user.email;
+    const oldFullName = user.full_name;
+    const oldRole = user.role;
+    const oldDept = user.department;
+
+    const deptResult = await query(
+      `SELECT name FROM department WHERE hod_user_id = $1`,
+      [id]
+    );
+
+    if (deptResult.recordset.length > 0 && (role !== 'HOD' || department !== deptResult.recordset[0].name)) {
+      return res.status(400).json({
+        error: `user is HOD for department "${deptResult.recordset[0].name}"; reassign HOD before changing role/department`
       });
     }
 
-    Object.keys(explicitDepartments).forEach(deptName=>{
-      const people = explicitDepartments[deptName];
-      // ensure department exists
-      db.get(`SELECT id FROM departments WHERE name = ?`, [deptName], (er,dr)=>{
-        if(er) return;
-        if(!dr) db.run(`INSERT INTO departments(name, hod_user_id) VALUES(?,?)`, [deptName, null]);
-        // create users and collect HOD
-        people.forEach(p=>{
-          const role = p.hod ? 'HOD' : 'employee';
-          ensureUser(p.name, role, deptName, (err, uid)=>{
-            if(err) return;
-            if(p.hod && uid){
-              // assign department hod_user_id
-              db.run(`UPDATE departments SET hod_user_id = ? WHERE name = ?`, [uid, deptName]);
-            }
-          });
-        });
-      });
-    });
-    return;
+    if (role === 'HOD') {
+      if (!department) return res.status(400).json({ error: 'HOD must have a department' });
+      const deptCheck = await query(
+        `SELECT hod_user_id FROM department WHERE name = $1`,
+        [department]
+      );
+      if (deptCheck.recordset.length > 0 && deptCheck.recordset[0].hod_user_id && deptCheck.recordset[0].hod_user_id != id) {
+        return res.status(400).json({ error: 'department already has HOD' });
+      }
+
+      await query(
+        `UPDATE users SET full_name = $1, role = $2, department = $3 WHERE id = $4`,
+        [full_name, role, department, id]
+      );
+
+      await query(
+        `MERGE department AS target
+           USING (VALUES(@p0,@p1)) AS src(name,hod_user_id)
+           ON target.name = src.name
+           WHEN MATCHED THEN UPDATE SET hod_user_id = src.hod_user_id
+           WHEN NOT MATCHED THEN INSERT(name,hod_user_id) VALUES(src.name,src.hod_user_id);`,
+        [department, id]
+      );
+    } else {
+      await query(
+        `UPDATE users SET full_name = $1, role = $2, department = $3 WHERE id = $4`,
+        [full_name, role, department, id]
+      );
+    }
+
+    const changes = [];
+    if (full_name !== oldFullName) changes.push(`name ${oldFullName} -> ${full_name}`);
+    if (role !== oldRole) changes.push(`role ${oldRole} -> ${role}`);
+    if (department !== oldDept) changes.push(`department ${oldDept} -> ${department}`);
+
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'UPDATE',
+      'user',
+      id,
+      `Updated user: ${changes.join(', ')}`
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.post('/api/users/:id/reset_password', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+  const { password } = req.body;
+  if (!password || password.length < 4) {
+    return res.status(400).json({ error: 'password too short' });
   }
 
-  // role === 'employee' or others: must belong to an existing department that has a HOD
-  if(!department) return res.status(400).json({error:'employee must have a department'});
-  db.get(`SELECT hod_user_id FROM departments WHERE name = ?`, [department], (err,row)=>{
-    if(err) return res.status(500).json({error:'db'});
-    if(!row || !row.hod_user_id) return res.status(400).json({error:'department must exist and have a HOD'});
-    db.run(`INSERT INTO users(full_name,email,password_hash,role,department) VALUES(?,?,?,?,?)`, [full_name,email,pwdHash,role,department], function(err3){
-      if(err3){ if(err3.code === 'SQLITE_CONSTRAINT') return res.status(400).json({error:'email exists'}); return res.status(500).json({error:'db'}); }
-      const newUserId = this.lastID;
-      initBalances(newUserId, ()=> res.json({ok:true,id:newUserId}));
-    });
-  });
+  try {
+    const userResult = await query(
+      `SELECT email FROM users WHERE id = $1`,
+      [id]
+    );
+
+    if (!userResult.recordset || userResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    const userEmail = userResult.recordset[0].email;
+    const hash = bcrypt.hashSync(password, 10);
+    await query(
+      `UPDATE users SET password_hash = $1 WHERE id = $2`,
+      [hash, id]
+    );
+
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'UPDATE',
+      'user',
+      id,
+      `Reset password for user`
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
 });
 
-// Admin: list users
-app.get('/api/users', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  db.all(`SELECT id, full_name, email, role, department FROM users ORDER BY full_name`, [], (err, rows) => {
-    if(err) return res.status(500).json({error:'db'});
-    res.json(rows || []);
-  });
-});
+app.delete('/api/users/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
 
-// Admin: update user (name, role, department)
-app.put('/api/users/:id', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id; const {full_name, role, department} = req.body;
-  // ensure HOD consistency: if this user is currently HOD for a department, prevent changing role/department without reassigning
-  db.get(`SELECT * FROM users WHERE id = ?`, [id], (err, current)=>{
-    if(err || !current) return res.status(404).json({error:'not found'});
-    db.get(`SELECT name FROM departments WHERE hod_user_id = ?`, [id], (e,dept)=>{
-      if(e) return res.status(500).json({error:'db'});
-      if(dept && (role !== 'HOD' || department !== dept.name)){
-        return res.status(400).json({error:'user is HOD for department "'+dept.name+'"; reassign HOD before changing role/department'});
-      }
-      // if trying to make someone a HOD, ensure target department doesn't already have a different HOD
-      if(role === 'HOD'){
-        if(!department) return res.status(400).json({error:'HOD must have a department'});
-        db.get(`SELECT hod_user_id FROM departments WHERE name = ?`, [department], (er,row)=>{
-          if(er) return res.status(500).json({error:'db'});
-          if(row && row.hod_user_id && row.hod_user_id != id) return res.status(400).json({error:'department already has HOD'});
-          // proceed to update user
-          db.run(`UPDATE users SET full_name = ?, role = ?, department = ? WHERE id = ?`, [full_name, role, department, id], function(err2){
-            if(err2) return res.status(500).json({error:'db'});
-            // ensure department row points to this user
-            db.run(`INSERT OR REPLACE INTO departments(name, hod_user_id) VALUES(?,?)`, [department, id], (er2)=>{
-              if(er2) return res.status(500).json({error:'db'});
-              res.json({ok:true});
-            });
-          });
-        });
-      }else{
-        // non-HOD update: simply update
-        db.run(`UPDATE users SET full_name = ?, role = ?, department = ? WHERE id = ?`, [full_name, role, department, id], function(err3){
-          if(err3) return res.status(500).json({error:'db'});
-          res.json({ok:true});
-        });
-      }
-    });
-  });
-});
+  try {
+    const userResult = await query(
+      `SELECT email, full_name FROM users WHERE id = $1`,
+      [id]
+    );
 
-// Admin: reset user password
-app.post('/api/users/:id/reset_password', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id; const {password} = req.body;
-  if(!password || password.length < 4) return res.status(400).json({error:'password too short'});
-  const hash = bcrypt.hashSync(password, 10);
-  db.run(`UPDATE users SET password_hash = ? WHERE id = ?`, [hash, id], function(err){
-    if(err) return res.status(500).json({error:'db'});
-    res.json({ok:true});
-  });
-});
+    if (!userResult.recordset || userResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
 
-// Admin: delete user and related data
-app.delete('/api/users/:id', requireAuth, (req,res)=>{
-  if(req.session.role !== 'admin') return res.status(403).json({error:'forbidden'});
-  const id = req.params.id;
-  // prevent deleting a user who is assigned as HOD of any department
-  db.get(`SELECT name FROM departments WHERE hod_user_id = ?`, [id], (err,dept)=>{
-    if(err) return res.status(500).json({error:'db'});
-    if(dept) return res.status(400).json({error:'cannot delete user; they are HOD for department '+dept.name+' - reassign HOD first'});
-    db.serialize(()=>{
-      db.run(`DELETE FROM leave_requests WHERE user_id = ?`, [id]);
-      db.run(`DELETE FROM user_leave_balances WHERE user_id = ?`, [id]);
-      db.run(`DELETE FROM users WHERE id = ?`, [id], function(err2){
-        if(err2) return res.status(500).json({error:'db'});
-        res.json({ok:true});
+    const userEmail = userResult.recordset[0].email;
+    const fullName = userResult.recordset[0].full_name;
+
+    const deptResult = await query(
+      `SELECT name FROM department WHERE hod_user_id = $1`,
+      [id]
+    );
+
+    if (deptResult.recordset.length > 0) {
+      return res.status(400).json({
+        error: `cannot delete user; they are HOD for department ${deptResult.recordset[0].name} - reassign HOD first`
       });
-    });
-  });
+    }
+
+    await query(`DELETE FROM leave_requests WHERE user_id = $1`, [id]);
+    await query(`DELETE FROM balance WHERE user_id = $1`, [id]);
+    await query(`DELETE FROM users WHERE id = $1`, [id]);
+
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'DELETE',
+      'user',
+      id,
+      `Deleted user: ${fullName} (${userEmail})`
+    );
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, ()=>{
-  initDb();
+// ===== AUDIT LOGS =====
+
+app.get('/api/audit-logs', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+
+  try {
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = page * limit;
+    const { action, user_email: userEmail, start_date: startDate, end_date: endDate } = req.query;
+
+    let clauses = [];
+    let params = [];
+
+    if (action) { clauses.push(`action = $${params.length + 1}`); params.push(action); }
+    if (userEmail) { clauses.push(`user_email = $${params.length + 1}`); params.push(userEmail); }
+    if (startDate) { clauses.push(`timestamp >= $${params.length + 1}`); params.push(new Date(startDate)); }
+    if (endDate) { clauses.push(`timestamp <= $${params.length + 1}`); params.push(new Date(endDate)); }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+
+    // SQL Server syntax for pagination
+    const dataQuery = `SELECT * FROM audit_logs ${where} ORDER BY timestamp DESC
+                       OFFSET $${params.length + 1} ROWS FETCH NEXT $${params.length + 2} ROWS ONLY`;
+    const countQuery = `SELECT COUNT(*) AS total FROM audit_logs ${where}`;
+
+    const dataResult = await query(dataQuery, [...params, offset, limit]);
+    const countResult = await query(countQuery, params);
+
+    const total = parseInt(countResult.recordset[0].total, 10);
+
+    res.json({
+      data: dataResult.recordset,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+    });
+  } catch (err) {
+    console.error('Audit logs error:', err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== ACTIVITIES =====
+
+app.get('/api/employee/:userId/activities', requireAuth, async (req, res) => {
+  const targetUserId = parseInt(req.params.userId, 10);
+  try {
+    // Permission check
+    if (req.session.role !== 'admin' && req.session.userId !== targetUserId) {
+      const u = await query('SELECT department FROM users WHERE id = $1', [targetUserId]);
+      if (!u.recordset || u.recordset.length === 0) return res.status(404).json({ error: 'user not found' });
+      const dept = u.recordset[0].department;
+      const hod = await query(
+        `SELECT id FROM users WHERE id = $1 AND role='HOD' AND department = $2`,
+        [req.session.userId, dept]
+      );
+      if (!hod.recordset || hod.recordset.length === 0) return res.status(403).json({ error: 'forbidden' });
+    }
+
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = page * limit;
+
+    const data = await query(
+      `SELECT * FROM audit_logs WHERE user_id = $1 OR entity_id = $1 ORDER BY timestamp DESC
+       OFFSET $2 ROWS FETCH NEXT $3 ROWS ONLY`,
+      [targetUserId, offset, limit]
+    );
+    const count = await query(
+      `SELECT COUNT(*) as total FROM audit_logs WHERE user_id = $1 OR entity_id = $1`,
+      [targetUserId]
+    );
+
+    const total = parseInt(count.recordset[0].total, 10);
+    res.json({
+      data: data.recordset,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+    });
+  } catch (err) {
+    console.error('Activities error:', err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== ANALYTICS =====
+
+app.get('/api/calc_days', (req, res) => {
+  const { start_date, end_date } = req.body || req.query;
+  if (!start_date || !end_date) {
+    return res.status(400).json({ error: 'missing dates' });
+  }
+  const days = countWorkingDays(start_date, end_date, HOLIDAYS);
+  res.json({ days });
+});
+
+app.get('/api/analytics/departments', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  try {
+    const result = await query(
+      `SELECT u.department, CAST(SUM(lr.days) AS INT) as days FROM leave_requests lr
+       JOIN users u ON u.id=lr.user_id
+       WHERE lr.status='admin_approved'
+       GROUP BY u.department`
+    );
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.get('/api/analytics/types', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  try {
+    const result = await query(
+      `SELECT lt.name as type, CAST(SUM(lr.days) AS INT) as days FROM leave_requests lr
+       JOIN leave_type lt ON lt.id=lr.leave_type_id
+       WHERE lr.status='admin_approved'
+       GROUP BY lt.name`
+    );
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== SERVER START =====
+
+const PORT = process.env.PORT || 3003;
+app.listen(PORT, async () => {
+  await initPool();
+  await initDb();
   console.log(`Server started on http://localhost:${PORT}`);
 });

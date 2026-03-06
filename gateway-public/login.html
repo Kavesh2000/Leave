@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maisha Bank - Unified Portal</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 40px 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success {
+      background: #efe;
+      color: #3c3;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .demo-creds {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 25px;
+      font-size: 12px;
+      color: #666;
+      border-left: 4px solid #667eea;
+    }
+
+    .demo-creds strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .demo-cred {
+      margin-bottom: 6px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .loading {
+      display: none;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>🏦 Maisha Bank</h1>
+        <p>Unified Management Portal</p>
+      </div>
+
+      <div class="content">
+        <div class="error" id="errorMsg"></div>
+        <div class="success" id="successMsg"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="user@maishabank.com" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required>
+          </div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            <span class="loading"><span class="spinner"></span>Logging in...</span>
+            <span class="normal">Login</span>
+          </button>
+        </form>
+
+        <div class="demo-creds">
+          <strong>📌 Demo Credentials:</strong>
+          <div class="demo-cred"><strong>Leave Admin:</strong> automation@maishabank.com / 1234</div>
+          <div class="demo-cred"><strong>Leave HOD:</strong> hod@example.com / password</div>
+          <div class="demo-cred"><strong>Leave Employee:</strong> emp@example.com / password</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      const loginBtn = document.getElementById('loginBtn');
+      const loadingSpan = loginBtn.querySelector('.loading');
+      const normalSpan = loginBtn.querySelector('.normal');
+
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      try {
+        // Show loading state
+        loginBtn.disabled = true;
+        loadingSpan.style.display = 'inline';
+        normalSpan.style.display = 'none';
+
+        const response = await fetch('/api/gateway/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.ok) {
+          successMsg.textContent = `Welcome ${data.user.name}! Redirecting...`;
+          successMsg.style.display = 'block';
+
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1500);
+        } else {
+          errorMsg.textContent = data.error || 'Login failed';
+          errorMsg.style.display = 'block';
+          loginBtn.disabled = false;
+          loadingSpan.style.display = 'none';
+          normalSpan.style.display = 'inline';
+        }
+      } catch (err) {
+        errorMsg.textContent = 'Connection error: ' + err.message;
+        errorMsg.style.display = 'block';
+        loginBtn.disabled = false;
+        loadingSpan.style.display = 'none';
+        normalSpan.style.display = 'inline';
+      }
+    }
+  </script>
+</body>
+</html>

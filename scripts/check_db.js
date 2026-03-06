@@ -1,18 +1,30 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const dbPath = path.join(__dirname, '..', 'data.sqlite');
-const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err)=>{ if(err){ console.error('DB open error', err); process.exit(1);} });
+// simple script to verify a connection to Postgres via DATABASE_URL
+// and exercise a couple of queries.
 
-function allAsync(sql, params=[]) {
-  return new Promise((res, rej)=> db.all(sql, params, (e,rows)=> e? rej(e): res(rows)));
-}
+// basic connection check using shared db.js helper
+const { query, initPool } = require('../db');
 
-(async ()=>{
-  try{
-    const users = await allAsync('SELECT id, full_name, email, role, department FROM users ORDER BY full_name');
-    const depts = await allAsync('SELECT d.id, d.name, d.hod_user_id, u.full_name as hod_name FROM departments d LEFT JOIN users u ON u.id=d.hod_user_id ORDER BY d.name');
-    console.log('USERS:'); console.log(JSON.stringify(users, null, 2));
-    console.log('\nDEPARTMENTS:'); console.log(JSON.stringify(depts, null, 2));
+(async () => {
+  try {
+    await initPool();
+    // verify connection
+    const r = await query('SELECT SYSUTCDATETIME() as now');
+    console.log('connected, server time', r.recordset[0].now);
+
+    // list users (if table exists)
+    const users = await query(
+      `SELECT ID, full_name, email, role, department
+       FROM users ORDER BY full_name OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY`);
+    console.log('users:', users.recordset);
+
+    // list departments
+    const depts = await query(
+      `SELECT id, name, hod_user_id FROM department ORDER BY name OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY`);
+    console.log('departments:', depts.recordset);
+
     process.exit(0);
-  }catch(err){ console.error('Query error', err); process.exit(2); }
+  } catch (err) {
+    console.error('DB query error', err.message || err);
+    process.exit(1);
+  }
 })();
