@@ -1,3 +1,16 @@
+#actionModal:not(.d-none), #actionModal .modal-fade.show, #actionModal textarea, #actionModal button, #actionModal .card {
+	pointer-events: auto !important;
+	z-index: 2001 !important;
+}
+#actionModal textarea, #actionModal input, #actionModal select {
+	background: #0f1a25 !important;
+	color: #e6eef8 !important;
+	pointer-events: auto !important;
+	z-index: 2002 !important;
+}
+#actionModal:not(.d-none) {
+	pointer-events: auto !important;
+}
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
 :root{
@@ -183,6 +196,10 @@ input.form-control:focus, select.form-select:focus{
 .modal-fade.show{
 	transform: translateY(0);
 	opacity: 1;
+<<<<<<< HEAD
+=======
+	pointer-events: auto !important;
+>>>>>>> d03d514 (Initial push: leave management system)
 }
 
 /* Toast */

@@ -7,7 +7,7 @@ const assignments = [
   {dept: 'ICT', name: 'Eric Mokaya'},
   {dept: 'Branch', name: 'Michael Mureithi'},
   {dept: 'Finance', name: 'Elizabeth Mungai'},
-  {dept: 'Customer Service', name: 'Patience Mutunga'}
+  {dept: 'Debt Collection', name: 'Patience Mutunga'}
 ];
 
 function run(){

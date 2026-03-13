@@ -17,9 +17,15 @@ const { query, initPool } = require('../db');
        FROM users ORDER BY full_name OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY`);
     console.log('users:', users.recordset);
 
+<<<<<<< HEAD
     // list departments
     const depts = await query(
       `SELECT id, name, hod_user_id FROM department ORDER BY name OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY`);
+=======
+    // list departments with HOD emails
+    const depts = await query(
+      `SELECT id, name, hod_user_id, hod_email, acting_hod_email FROM department ORDER BY name OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY`);
+>>>>>>> d03d514 (Initial push: leave management system)
     console.log('departments:', depts.recordset);
 
     process.exit(0);

@@ -70,7 +70,11 @@ async function runTests() {
     ['margaret.njeri@maishabank.com', '1234', 'employee'],
     ['elizabeth.mungai@maishabank.com', '1234', 'HOD'],  // HOD
     
+<<<<<<< HEAD
     // Customer Service Department
+=======
+    // Debt Collection Department
+>>>>>>> d03d514 (Initial push: leave management system)
     ['juliana.jeptoo@maishabank.com', '1234', 'employee'],
     ['faith.bonareri@maishabank.com', '1234', 'employee'],
     ['patience.mutunga@maishabank.com', '1234', 'HOD'],  // HOD
@@ -88,7 +92,11 @@ async function runTests() {
   console.log('  ICT: eric.mokaya@maishabank.com');
   console.log('  Branch: michael.mureithi@maishabank.com');
   console.log('  Finance: elizabeth.mungai@maishabank.com');
+<<<<<<< HEAD
   console.log('  Customer Service: patience.mutunga@maishabank.com');
+=======
+  console.log('  Debt Collection: patience.mutunga@maishabank.com');
+>>>>>>> d03d514 (Initial push: leave management system)
 }
 
 runTests();

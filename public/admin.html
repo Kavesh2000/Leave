@@ -25,8 +25,13 @@
     </nav>
     <main class="container-fluid py-4">
       <div class="row">
+<<<<<<< HEAD
         <aside class="col-md-3 mb-3">
           <div class="card shadow-lg h-100" style="border-radius:16px;border:1px solid #1e3a8a;background:linear-gradient(135deg,#1e40af,#1e3a8a);">
+=======
+        <aside class="col-md-3 mb-3" style="min-height: 100vh;">
+          <div class="card shadow-lg h-100" style="min-height:100vh;display:flex;flex-direction:column;justify-content:flex-start;border-radius:16px;border:1px solid #1e3a8a;background:linear-gradient(135deg,#1e40af,#1e3a8a);">
+>>>>>>> d03d514 (Initial push: leave management system)
             <div class="card-body p-3">
               <div class="d-flex align-items-center mb-4 pb-3 border-bottom" style="border-color:#3b82f6!important">
                 <div style="width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;margin-right:12px;font-size:24px;">👤</div>
@@ -37,20 +42,82 @@
               </div>
               <div class="list-group" style="border:none;gap:8px;display:flex;flex-direction:column;">
                 <button type="button" class="list-group-item list-group-item-action active" data-view="requests" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;font-weight:500;cursor:pointer;">📋 Requests</button>
+<<<<<<< HEAD
                 <button type="button" class="list-group-item list-group-item-action" data-view="createUser" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">➕ Create User</button>
                 <button type="button" class="list-group-item list-group-item-action" data-view="users" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">👥 Users</button>
                 <button type="button" class="list-group-item list-group-item-action" data-view="auditLogs" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">📊 Audit Logs</button>
+=======
+                <button type="button" class="list-group-item list-group-item-action" data-view="balances" style="border-radius:10px;border:1px solid #10b981;background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;transition:all 0.3s;cursor:pointer;">🧮 Edit Leave Balances</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="createUser" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">➕ Create User</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="users" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">👥 Users</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="changeRights" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#a21caf,#7c3aed);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">🛡️ Change Rights</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="auditLogs" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;transition:all 0.3s;cursor:pointer;">📊 Audit Logs</button>
+                <button type="button" class="list-group-item list-group-item-action" data-view="leaveHistory" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;transition:all 0.3s;cursor:pointer;">📖 Leave History</button>
+>>>>>>> d03d514 (Initial push: leave management system)
                 <button type="button" id="openActingHodBtn" style="border-radius:10px;border:1px solid #3b82f6;background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#e0e7ff;padding:12px;font-weight:500;transition:all 0.3s;cursor:pointer;text-align:left;">👥 Assign Acting HOD</button>
               </div>
             </div>
           </div>
         </aside>
         <section class="col-md-9">
+                              <div id="view-balances" class="view d-none">
+                                <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #10b981;background:linear-gradient(135deg,#f3f0ff,#e9d5ff);">
+                                  <div class="card-body p-4">
+                                    <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">🧮 Edit Leave Balances</h5>
+                                    <div id="balances"></div>
+                                    <div class="d-grid mt-4">
+                                      <button id="saveAllBalancesBtn" class="btn" style="background:linear-gradient(135deg,#8b5cf6,#d946ef);color:white;border:none;border-radius:10px;padding:14px;font-weight:600;font-size:15px;transition:all 0.3s;box-shadow:0 8px 16px rgba(139,92,246,0.3);">Save All Changes</button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                    <!-- Change Rights Module -->
+                    <div id="view-changeRights" class="view d-none">
+                      <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #a21caf;background:linear-gradient(135deg,#f3e8ff,#ede9fe);">
+                        <div class="card-body p-4">
+                          <h5 class="card-title" style="background:linear-gradient(135deg,#a21caf,#7c3aed);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">🛡️ Change User Rights</h5>
+                          <div class="mb-3">
+                            <label style="color:#6d28d9;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">Select User</label>
+                            <select id="rightsUserSelect" class="form-select" style="border-radius:10px;border:2px solid #a21caf;background:#fff;padding:12px;color:#1f2937;font-weight:500;"></select>
+                          </div>
+                          <div class="mb-3">
+                            <label style="color:#6d28d9;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">Assign Rights</label>
+                            <select id="rightsRoleSelect" class="form-select" style="border-radius:10px;border:2px solid #a21caf;background:#fff;padding:12px;color:#1f2937;font-weight:500;">
+                              <option value="HOD">🎯 HOD</option>
+                              <option value="admin">🛡️ Admin</option>
+                            </select>
+                          </div>
+                          <div class="mb-3" id="rightsDeptDiv" style="display:none;">
+                            <label style="color:#6d28d9;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">Select Department (for HOD)</label>
+                            <select id="rightsDeptSelect" class="form-select" style="border-radius:10px;border:2px solid #a21caf;background:#fff;padding:12px;color:#1f2937;font-weight:500;"></select>
+                          </div>
+                          <div class="d-grid"><button id="rightsSubmit" class="btn" style="background:linear-gradient(135deg,#a21caf,#7c3aed);color:white;border:none;border-radius:10px;padding:14px;font-weight:600;font-size:15px;transition:all 0.3s;box-shadow:0 8px 16px rgba(124,58,237,0.3);">Update Rights</button></div>
+                        </div>
+                      </div>
+                    </div>
           <div id="view-requests" class="view">
             <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
+<<<<<<< HEAD
                 <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📋 Leave Requests</h5>
                 <ul id="requests" class="list-group" style="border:none;gap:12px;display:flex;flex-direction:column;"></ul>
+=======
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📋 Leave Requests</h5>
+                <ul id="requests" class="list-group" style="border:none;gap:18px;display:flex;flex-direction:column;"></ul>
+              </div>
+            </div>
+            <!-- Action Modal -->
+            <div id="actionModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
+              <div class="d-flex vh-100 align-items-center justify-content-center">
+                <div class="card p-4 modal-fade" style="width:450px;background:linear-gradient(135deg,#1a2a3f,#0f1a28);border:1px solid #2a4a5f;">
+                  <h6 style="color:#10b981;font-weight:700;margin-bottom:1rem;">Enter <span id="actionType" style="text-transform:uppercase;"></span> Reason</h6>
+                  <textarea id="actionReason" class="form-control mb-3" placeholder="Enter reason/comment..." rows="4" style="background:#0f1a25;border:1px solid #3a5a6a;color:#e6eef8;border-radius:6px;resize:vertical;"></textarea>
+                  <div class="d-flex justify-content-end gap-2">
+                    <button id="actionCancel" class="btn" style="background:#2a3a4a;color:#e6eef8;border:1px solid #3a5a6a;border-radius:6px;padding:8px 16px;">Cancel</button>
+                    <button id="actionSubmit" class="btn" style="background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;border:0;border-radius:6px;padding:8px 16px;font-weight:600;">Submit</button>
+                  </div>
+                </div>
+>>>>>>> d03d514 (Initial push: leave management system)
               </div>
             </div>
             <!-- Action Modal -->
@@ -73,7 +140,11 @@
           <div id="view-createUser" class="view d-none">
             <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
+<<<<<<< HEAD
                 <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">➕ Create New User</h5>
+=======
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">➕ Create New User</h5>
+>>>>>>> d03d514 (Initial push: leave management system)
                 <form id="createUserForm">
                   <div class="mb-3">
                     <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">👤 Full Name</label>
@@ -97,10 +168,20 @@
                   </div>
                   <div class="mb-3">
                     <label style="color:#374151;font-weight:600;font-size:13px;margin-bottom:6px;display:block;">🏢 Department</label>
+<<<<<<< HEAD
                     <select id="u_department" class="form-select" style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;display:none;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
                       <option value="">-- Select Department --</option>
                     </select>
                     <input id="u_department_text" class="form-control" placeholder="e.g., IT, Finance" style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;display:none;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+=======
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <select id="u_department" class="form-select" style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;flex:1;" onfocus="this.style.borderColor='#7c3aed';this.style.boxShadow='0 0 0 3px rgba(124,58,237,0.1)'" onblur="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+                        <option value="">-- Select Department --</option>
+                      </select>
+                      <button type="button" id="addDeptBtn" class="btn" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-weight:600;">➕ Add</button>
+                    </div>
+                    <input id="u_department_text" class="form-control mt-2" placeholder="Enter new department name..." style="border-radius:10px;border:2px solid #e5e7eb;background:#ffffff;padding:12px;color:#1f2937;font-weight:500;display:none;" />
+>>>>>>> d03d514 (Initial push: leave management system)
                   </div>
                   <div class="d-grid"><button type="submit" class="btn" style="background:linear-gradient(135deg,#7c3aed 10%, #a855f7 50%, #ec4899 90%);color:white;border:none;border-radius:10px;padding:14px;font-weight:600;font-size:15px;transition:all 0.3s;box-shadow:0 8px 16px rgba(124,58,237,0.3);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(124,58,237,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 16px rgba(124,58,237,0.3)'">✨ Create User</button></div>
                 </form>
@@ -111,7 +192,11 @@
           <div id="view-users" class="view d-none">
             <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
+<<<<<<< HEAD
                 <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">👥 User Management</h5>
+=======
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">👥 User Management</h5>
+>>>>>>> d03d514 (Initial push: leave management system)
                 <div id="usersList"></div>
                 <!-- Reset password modal -->
                 <div id="resetModal" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index:1200;backdrop-filter:blur(3px);background:rgba(0,0,0,0.6);">
@@ -149,6 +234,13 @@
                         <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">🏢 Department</label>
                         <input id="editDept" class="form-control" type="text" placeholder="Leave empty for non-department roles" style="background:rgba(255,255,255,0.95);border:2px solid #fbbf24;color:#1f2937;border-radius:8px;padding:10px 12px;font-weight:500;">
                       </div>
+<<<<<<< HEAD
+=======
+                        <div class="mb-4">
+                          <label style="color:white;font-weight:600;font-size:13px;margin-bottom:6px;display:block;text-shadow:0 1px 3px rgba(0,0,0,0.2);">📝 Leave Balances</label>
+                          <div id="editBalances"></div>
+                        </div>
+>>>>>>> d03d514 (Initial push: leave management system)
                       <div class="d-flex justify-content-end gap-2">
                         <button id="editCancel" class="btn" style="background:rgba(255,255,255,0.2);color:white;border:2px solid white;border-radius:8px;padding:10px 24px;font-weight:600;transition:all 0.3s;">Cancel</button>
                         <button id="editSubmit" class="btn" style="background:#fbbf24;color:#1f2937;border:none;border-radius:8px;padding:10px 24px;font-weight:700;box-shadow:0 8px 16px rgba(251,191,36,0.4);transition:all 0.3s;">💾 Save Changes</button>
@@ -186,7 +278,11 @@
           <div id="view-auditLogs" class="view d-none">
             <div class="card shadow-lg mb-3" style="border-radius:16px;border:1px solid #2a4a5a;background:linear-gradient(135deg,#1a2a3a,#0f1a25);">
               <div class="card-body p-4">
+<<<<<<< HEAD
                 <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📊 System Audit Logs</h5>
+=======
+                <h5 class="card-title" style="background:linear-gradient(135deg,#10b981,#0d7a66);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700;margin-bottom:20px;">📊 System Audit Logs</h5>
+>>>>>>> d03d514 (Initial push: leave management system)
                 <div class="mb-3" style="display:flex;gap:12px;flex-wrap:wrap;">
                   <input type="text" id="auditFilterEmail" class="form-control" placeholder="Filter by user email..." style="border-radius:10px;border:1px solid #3a5a6a;background:#0f1a25;padding:12px;color:#e6eef8;flex:1;min-width:200px;">
                   <select id="auditFilterAction" class="form-select" style="border-radius:10px;border:1px solid #3a5a6a;background:#0f1a25;padding:12px;color:#e6eef8;flex:1;min-width:150px;">
@@ -210,6 +306,173 @@
       </div>
     </main>
     <script>
+                // Show/hide views and attach leave balance refresh
+                document.querySelectorAll('.list-group-item[data-view]').forEach(btn => {
+                  btn.addEventListener('click', function() {
+                    document.querySelectorAll('.view').forEach(v => v.classList.add('d-none'));
+                    const viewId = 'view-' + btn.getAttribute('data-view');
+                    const view = document.getElementById(viewId);
+                    if (view) {
+                      view.classList.remove('d-none');
+                      if (viewId === 'view-leaveHistory') refreshAdminLeaveHistory();
+                      if (viewId === 'view-balances') refreshBalances();
+                    }
+                    document.querySelectorAll('.list-group-item[data-view]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                  });
+                });
+        // --- Leave History logic ---
+        async function refreshAdminLeaveHistory() {
+          const tb = document.getElementById('adminLeaveHistory');
+          if (!tb) return;
+          tb.innerHTML = '';
+          const reqs = await (await fetch('/api/leave_requests')).json();
+          if (!Array.isArray(reqs) || reqs.length === 0) {
+            tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:#888;">📭 No leave requests found</td></tr>`;
+            return;
+          }
+          reqs.forEach(x => {
+            let approver = '';
+            let comment = '';
+            if (x.status === 'hr_approved') { approver = 'HR'; comment = x.hod_comment || ''; }
+            else if (x.status === 'rejected') { approver = 'HR'; comment = x.hod_comment || ''; }
+            else if (x.status === 'pending') { approver = '-'; comment = ''; }
+            const statusBadge = x.status === 'hr_approved' ? `<span style='background:#0ea5e9;color:#fff;padding:4px 10px;border-radius:6px;font-weight:600;'>HR Approved</span>` :
+              x.status === 'rejected' ? `<span style='background:#a78bfa;color:#fff;padding:4px 10px;border-radius:6px;font-weight:600;'>Rejected</span>` :
+              `<span style='background:#f97316;color:#fff;padding:4px 10px;border-radius:6px;font-weight:600;'>Pending</span>`;
+            tb.innerHTML += `<tr>
+              <td style='padding:12px;'>${x.full_name || x.employee_name || '-'}</td>
+              <td style='padding:12px;'>${x.leave_type || '-'}</td>
+              <td style='padding:12px;'>${x.start_date || '-'}</td>
+              <td style='padding:12px;'>${x.end_date || '-'}</td>
+              <td style='padding:12px;text-align:center;'>${x.days || '-'}</td>
+              <td style='padding:12px;text-align:center;'>${statusBadge}</td>
+              <td style='padding:12px;'>${approver}</td>
+              <td style='padding:12px;'>${comment ? comment : '-'}</td>
+            </tr>`;
+          });
+        }
+
+        // Show/hide views and attach leave history refresh
+        document.querySelectorAll('.list-group-item[data-view]').forEach(btn => {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('d-none'));
+            const viewId = 'view-' + btn.getAttribute('data-view');
+            const view = document.getElementById(viewId);
+            if (view) {
+              view.classList.remove('d-none');
+              if (viewId === 'view-leaveHistory') refreshAdminLeaveHistory();
+            }
+            document.querySelectorAll('.list-group-item[data-view]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          });
+        });
+        // Change Rights module logic
+        async function refreshChangeRights(){
+          // Load all users
+          const users = await (await fetch('/api/users')).json();
+          const userSel = document.getElementById('rightsUserSelect');
+          userSel.innerHTML = '';
+          users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            opt.textContent = `${u.full_name} (${u.email}) [${u.role}]`;
+            userSel.appendChild(opt);
+          });
+          // Load departments
+          const depts = await (await fetch('/api/departments')).json();
+          const deptSel = document.getElementById('rightsDeptSelect');
+          deptSel.innerHTML = '';
+          depts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.name;
+            opt.textContent = d.name;
+            deptSel.appendChild(opt);
+          });
+          // Hide dept by default
+          document.getElementById('rightsDeptDiv').style.display = 'none';
+        }
+
+        document.querySelector('button[data-view="changeRights"]').addEventListener('click', async ()=>{
+          await refreshChangeRights();
+        });
+
+
+        function updateRightsDeptVisibility() {
+          const roleSel = document.getElementById('rightsRoleSelect');
+          const deptDiv = document.getElementById('rightsDeptDiv');
+          if(roleSel.value === 'HOD') {
+            deptDiv.style.display = 'block';
+          } else {
+            deptDiv.style.display = 'none';
+          }
+        }
+        document.getElementById('rightsRoleSelect').addEventListener('change', updateRightsDeptVisibility);
+        document.getElementById('rightsUserSelect').addEventListener('change', updateRightsDeptVisibility);
+        // Ensure correct state on load
+        updateRightsDeptVisibility();
+
+        function attachRightsSubmitHandler() {
+          const btn = document.getElementById('rightsSubmit');
+          if (!btn) return;
+          btn.onclick = async function() {
+            alert('Update Rights button clicked');
+            console.log('Update Rights button clicked');
+            const userId = document.getElementById('rightsUserSelect').value;
+            const role = document.getElementById('rightsRoleSelect').value;
+            let department = null;
+            if(role === 'HOD'){
+              department = document.getElementById('rightsDeptSelect').value;
+              if(!department){
+                document.getElementById('rightsDeptSelect').style.borderColor = 'red';
+                showToast('Select a department for HOD');
+                return;
+              } else {
+                document.getElementById('rightsDeptSelect').style.borderColor = '';
+              }
+            }
+            // Get the selected user's full name from the select option text
+            const userSel = document.getElementById('rightsUserSelect');
+            const selectedOption = userSel.options[userSel.selectedIndex];
+            // Extract full name from option text (format: 'Full Name (email) [role]')
+            let full_name = selectedOption.textContent.split(' (')[0].trim();
+            if (!full_name) full_name = '';
+            try {
+              alert('Sending request...');
+              const res = await fetch('/api/users/'+userId,{
+                method:'PUT',
+                headers:{
+                  'Content-Type':'application/json',
+                  'Cache-Control': 'no-cache'
+                },
+                body:JSON.stringify({full_name, role, department})
+              });
+              alert('Received response: status ' + res.status);
+              if(res.ok){
+                alert('✅ Rights updated!');
+                showToast('✅ Rights updated');
+                await refreshChangeRights();
+              } else {
+                let errMsg = 'Failed to update rights';
+                try {
+                  const j=await res.json();
+                  errMsg = j.error || errMsg;
+                } catch(e) {}
+                alert('Error: ' + errMsg);
+                showToast('Error: '+errMsg);
+              }
+            } catch (err) {
+              alert('Network or browser error: ' + (err.message || err));
+              showToast('Network or browser error: ' + (err.message || err));
+            }
+          };
+        }
+        // Attach handler after DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', attachRightsSubmitHandler);
+        } else {
+          attachRightsSubmitHandler();
+        }
     async function load(){
       try{ const me = await (await fetch('/api/me')).json(); if(me && me.department) document.getElementById('adminDept').textContent = me.department; }catch(e){}
       // Ensure navbar welcome text is Admin and white
@@ -235,8 +498,11 @@
       document.getElementById('auditRefreshBtn').addEventListener('click', refreshAuditLogs);
       document.getElementById('auditExportBtn').addEventListener('click', exportAuditLogsToExcel);
       
+<<<<<<< HEAD
       // make sure create-user form controls reflect default role
       if(document.getElementById('u_role')) updateDepartmentField();
+=======
+>>>>>>> d03d514 (Initial push: leave management system)
       showView('requests');
     }
 
@@ -258,8 +524,11 @@
       const activeBtn = document.querySelector('button[data-view="' + name + '"]');
       if(activeBtn) activeBtn.classList.add('active');
       
+<<<<<<< HEAD
       // when user navigates to createUser view ensure department field is updated
       if(name === 'createUser') updateDepartmentField();
+=======
+>>>>>>> d03d514 (Initial push: leave management system)
       if(name === 'analytics') refreshAnalytics();
     }
 
@@ -366,17 +635,29 @@
     }
 
     function showToast(msg){ 
+<<<<<<< HEAD
       const wrap = document.querySelector('.toast-wrap') || (function(){ 
         const d=document.createElement('div'); 
         d.className='toast-wrap'; 
         d.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10000;';
+=======
+      console.log('[TOAST]', msg);
+      const wrap = document.querySelector('.toast-wrap') || (function(){ 
+        const d=document.createElement('div'); 
+        d.className='toast-wrap'; 
+        d.style.cssText='position:fixed;bottom:40px;left:50%;transform:translateX(-50%);z-index:99999;pointer-events:none;';
+>>>>>>> d03d514 (Initial push: leave management system)
         document.body.appendChild(d); 
         return d; 
       })(); 
       const t=document.createElement('div'); 
       t.className='toast'; 
       t.textContent=msg; 
+<<<<<<< HEAD
       t.style.cssText='background:linear-gradient(135deg,#10b981,#0d7a66);color:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 8px 24px rgba(16,185,129,0.3);border-left:4px solid #14b8a6;font-weight:600;font-size:14px;margin-top:8px;'; 
+=======
+      t.style.cssText='background:#fff;color:#0f1a25;padding:16px 24px;border-radius:12px;box-shadow:0 8px 32px rgba(16,185,129,0.5);border:3px solid #10b981;font-weight:800;font-size:18px;margin-top:12px;letter-spacing:0.5px;z-index:99999;pointer-events:auto;'; 
+>>>>>>> d03d514 (Initial push: leave management system)
       wrap.appendChild(t); 
       setTimeout(()=> t.remove(),3500); 
     }
@@ -391,6 +672,7 @@
       
       r.forEach((x, idx)=>{
         const statusConfig = {
+<<<<<<< HEAD
           'pending': { color: '#ef4444', bg: '#fef2f2', text: '⏳ Pending', lightText: '#dc2626' },
           'hod_approved': { color: '#0ea5e9', bg: '#f0f9ff', text: '✓ HOD Approved', lightText: '#0284c7' },
           'admin_approved': { color: '#22c55e', bg: '#f0fdf4', text: '✅ Approved', lightText: '#16a34a' },
@@ -404,6 +686,37 @@
         li.innerHTML = `<div style='background:${status.bg};border-left:3px solid ${status.color};padding:10px 12px;border-radius:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;'><div style='flex:1;min-width:0;'><div style='display:flex;align-items:center;gap:8px;margin-bottom:4px;'><strong style='color:#1f2937;font-size:14px;'>${x.full_name}</strong><span style='background:${status.color};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;'>${status.text}</span></div><div style='font-size:12px;color:#6b7280;margin-bottom:6px;'>${x.leave_type} • ${x.start_date} → ${x.end_date} • <strong style='color:#1f2937;'>${x.days}d</strong></div><div style='display:flex;gap:8px;align-items:center;font-size:11px;'><span style='background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:4px;font-weight:600;'>💰 ${x.remaining_days}/${x.days}</span></div>${reasonDisplay}</div><div style='display:flex;gap:6px;'>${actionButtons}</div></div>`;
         li.className = 'list-group-item';
         li.style.cssText = 'border:none;padding:0;margin-bottom:8px;';
+=======
+          'pending': { color: '#ef4444', bg: '#fff8f0', text: '⏳ Pending', lightText: '#dc2626' },
+          'hr_approved': { color: '#0ea5e9', bg: '#e6f4ff', text: '✓ HR Approved', lightText: '#0284c7' },
+          'admin_approved': { color: '#22c55e', bg: '#e7fbe9', text: '✅ Approved', lightText: '#16a34a' },
+          'rejected': { color: '#a78bfa', bg: '#f6f0ff', text: '✗ Rejected', lightText: '#8b5cf6' }
+        };
+        const status = statusConfig[x.status] || statusConfig['pending'];
+        const actionButtons = x.status === 'hr_approved' ? `<button class='btn-action' data-id='${x.id}' data-act='approve' style='background:linear-gradient(135deg, #10b981 0%, #059669 100%);'>✓</button><button class='btn-action' data-id='${x.id}' data-act='reject' style='background:linear-gradient(135deg, #f97316 0%, #ea580c 100%);'>✕</button>` : '';
+        const reasonDisplay = (x.status === 'rejected' && x.admin_comment) ? `<div style='font-size:12px;color:#a21caf;margin-top:4px;'>📌 ${x.admin_comment}</div>` : '';
+
+        // Modern left-to-right approval queue
+        li = document.createElement('li');
+        li.innerHTML = `
+          <div style="background:${status.bg};border-radius:16px;box-shadow:0 2px 12px rgba(16,24,40,0.06);padding:18px 24px;display:flex;align-items:center;gap:28px;">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <span style="font-weight:700;font-size:16px;color:#22223b;">${x.full_name}</span>
+                <span style="background:${status.color};color:#fff;padding:3px 14px;border-radius:16px;font-size:13px;font-weight:600;">${status.text}</span>
+              </div>
+              <div style="font-size:13px;color:#444;margin-bottom:2px;">${x.leave_type} &bull; ${x.start_date} → ${x.end_date} &bull; <strong style='color:#1f2937;'>${x.days}d</strong></div>
+              <div style="display:flex;align-items:center;gap:12px;font-size:13px;">
+                <span style="background:#e0f2fe;color:#0369a1;padding:3px 12px;border-radius:16px;font-weight:600;">💰 ${x.remaining_days}/${x.days}</span>
+                ${reasonDisplay}
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">${actionButtons}</div>
+          </div>
+        `;
+        li.className = 'list-group-item';
+        li.style.cssText = 'border:none;padding:0;margin-bottom:0;background:none;';
+>>>>>>> d03d514 (Initial push: leave management system)
         el.appendChild(li);
       });
 
@@ -423,11 +736,52 @@
         document.getElementById('actionModal').dataset.requestId = id;
         document.getElementById('actionModal').dataset.action = act;
         document.getElementById('actionModal').classList.remove('d-none');
+<<<<<<< HEAD
         setTimeout(()=> document.querySelector('#actionModal .modal-fade').classList.add('show'),10);
+=======
+        // Always add .show immediately
+        document.querySelector('#actionModal .modal-fade').classList.add('show');
+
+        // Always attach handlers after opening modal
+        document.getElementById('actionCancel').onclick = ()=>{
+          document.querySelector('#actionModal .modal-fade').classList.remove('show');
+          setTimeout(()=> document.getElementById('actionModal').classList.add('d-none'),220);
+        };
+        document.getElementById('actionSubmit').onclick = async ()=>{
+          const id = document.getElementById('actionModal').dataset.requestId; 
+          const act = document.getElementById('actionModal').dataset.action;
+          const reason = document.getElementById('actionReason').value;
+          const res = await fetch('/api/leave_requests/'+id+'/admin_action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:act,comment:reason})});
+          if(res.ok){ showToast(act==='approve' ? 'Leave approved & balance deducted' : 'Leave rejected'); document.getElementById('actionCancel').click(); await refreshRequests(); await refreshBalances(); } else { const j=await res.json(); showToast('Error: '+(j.error||'Unknown error')); }
+        };
+
+        // --- balances logic is only here, where id is defined ---
+>>>>>>> d03d514 (Initial push: leave management system)
       });
+          let balances = [];
+          try {
+            balances = await (await fetch('/api/balances')).json();
+          } catch (e) { balances = []; }
+          const userBalances = balances.filter(b => b.user_id == id);
+          // Get all leave types
+          let leaveTypes = [];
+          try {
+            leaveTypes = await (await fetch('/api/leave_types')).json();
+          } catch (e) { leaveTypes = []; }
+          // Render balances inputs
+          const balDiv = document.getElementById('editBalances');
+          balDiv.innerHTML = '';
+          leaveTypes.forEach(lt => {
+            const bal = userBalances.find(b => b.leave_type_id === lt.id || b.leave_type === lt.name);
+            const val = bal ? bal.remaining_days : lt.default_days;
+            balDiv.innerHTML += `<div style='margin-bottom:8px;'><span style='display:inline-block;width:90px;'>${lt.name}:</span> <input type='number' class='form-control' style='display:inline-block;width:100px;' data-leavetype='${lt.id}' value='${val}' /></div>`;
+          });
+          document.getElementById('editModal').classList.remove('d-none');
+          setTimeout(()=> document.querySelector('#editModal .modal-fade').classList.add('show'),10);
     }
 
     async function refreshBalances(){
+<<<<<<< HEAD
       const b = await (await fetch('/api/balances')).json(); 
       const be = document.getElementById('balances'); 
       if(!be) return;
@@ -465,7 +819,197 @@
         deptText.style.display = 'block';
         deptText.value = '';
       }
+=======
+      const b = await (await fetch('/api/balances')).json();
+      const leaveTypes = await (await fetch('/api/leave_types')).json();
+      const be = document.getElementById('balances');
+      if(!be) return;
+      // Group balances by user
+      const userMap = {};
+      b.forEach(x => {
+        if (!userMap[x.user_id]) userMap[x.user_id] = { user: x, balances: {} };
+        userMap[x.user_id].balances[x.leave_type_id] = x;
+      });
+      let html = `<div style='overflow-x:auto;'><table style='width:100%;border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);color:white;font-weight:600;'><th style='border-radius:8px 0 0 0;padding:12px;text-align:left;'>👤 Name</th><th style='padding:12px;text-align:left;'>🏢 Department</th><th style='padding:12px;text-align:center;'>📅 Leave Type</th><th style='border-radius:0 8px 0 0;padding:12px;text-align:right;'>Remaining</th></tr></thead><tbody>`;
+      Object.values(userMap).forEach((entry, idx) => {
+        const { user, balances } = entry;
+        html += `<tr style='background:transparent;border-radius:8px;border:1px solid #e9d5ff;'>`;
+        html += `<td style='border-radius:8px 0 0 8px;padding:12px;'><strong>${user.full_name}</strong></td>`;
+        html += `<td style='padding:12px;color:#6b7280;'>${user.department || '—'}</td>`;
+        html += `<td style='padding:12px;text-align:center;'>`;
+        html += `<select data-user='${user.user_id}' class='form-select leave-type-select' style='width:120px;display:inline-block;'>`;
+        leaveTypes.forEach(lt => {
+          html += `<option value='${lt.id}'>${lt.name}</option>`;
+        });
+        html += `</select>`;
+        html += `</td>`;
+        // Default to first leave type
+        const firstType = leaveTypes[0]?.id;
+        const bal = balances[firstType] || { remaining_days: leaveTypes[0]?.default_days || 0 };
+        // Accrued days input for Annual leave
+        let accruedInput = '';
+        if (leaveTypes[0]?.name.toLowerCase() === 'annual') {
+          const accruedVal = balances[firstType]?.accrued_days ?? 0;
+          accruedInput = `<div style='display:flex;flex-direction:column;align-items:center;margin-left:8px;'>
+            <label style='font-size:12px;color:#818cf8;font-weight:600;'>Accrued Days</label>
+            <input type='number' value='${accruedVal}' data-user='${user.user_id}' data-type='accrued' style='width:60px;padding:8px;border:1px solid #818cf8;border-radius:6px;background:transparent;font-weight:bold;' placeholder='Accrued' title='Accrued Days' />
+          </div>`;
+        }
+        html += `<td style='border-radius:0 8px 8px 0;padding:12px;'><div style='display:flex;gap:6px;'><input type='number' value='${bal.remaining_days}' data-user='${user.user_id}' data-type='${firstType}' style='width:60px;padding:8px;border:1px solid #d8b4fe;border-radius:6px;background:transparent;font-weight:bold;' />${accruedInput}<button data-save='${user.user_id}-${firstType}' style='padding:8px 12px;background:linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px;'>✓</button></div></td>`;
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      be.innerHTML = html;
+      // Handler for dropdown change
+      document.querySelectorAll('.leave-type-select').forEach(sel => {
+        sel.onchange = function() {
+          const userId = this.getAttribute('data-user');
+          const leaveTypeId = this.value;
+          const entry = userMap[userId];
+          const bal = entry.balances[leaveTypeId] || { remaining_days: leaveTypes.find(lt => lt.id == leaveTypeId)?.default_days || 0 };
+          const input = this.closest('tr').querySelector('input[type="number"]');
+          input.value = bal.remaining_days;
+          input.setAttribute('data-type', leaveTypeId);
+          const btn = this.closest('tr').querySelector('button[data-save]');
+          btn.setAttribute('data-save', `${userId}-${leaveTypeId}`);
+          // Re-attach save handler after dropdown change
+          attachSaveHandlers();
+        };
+      });
+      // Attach save handlers after table render
+      attachSaveHandlers();
+      // Instant update for accrued days input
+      document.querySelectorAll('input[data-type="accrued"]').forEach(input => {
+        input.onchange = async function() {
+          const userId = input.getAttribute('data-user');
+          // Find annual leave type id
+          const annualType = leaveTypes.find(lt => lt.name.toLowerCase() === 'annual');
+          if (!annualType) return;
+          const val = parseInt(input.value);
+          const res = await fetch(`/api/balances/${userId}/${annualType.id}`,{
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ accrued_days: val })
+          });
+          if(res.ok) { await refreshBalances(); showToast('Accrued days updated'); }
+        };
+      });
+      // Save handler function
+      function attachSaveHandlers() {
+        document.querySelectorAll('button[data-save]').forEach(btn=>btn.onclick=async ()=>{ 
+          const key = btn.getAttribute('data-save'); 
+          const [u,t]=key.split('-'); 
+          const input = btn.parentElement.querySelector('input[data-type]'); 
+          const val = parseInt(input.value); 
+          // Check for accrued input
+          const accruedInput = btn.parentElement.querySelector('input[data-type="accrued"]');
+          let body = { remaining_days: val };
+          // Always send accrued_days for annual leave
+          if (accruedInput) {
+            const accruedVal = parseInt(accruedInput.value);
+            body.accrued_days = accruedVal;
+          }
+          const res = await fetch(`/api/balances/${u}/${t}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          if(res.ok) { await refreshBalances(); showToast('Leave balance updated'); } else alert(JSON.stringify(await res.json())); 
+        });
+      }
+        // Save All Changes button handler
+        const saveAllBtn = document.getElementById('saveAllBalancesBtn');
+        if (saveAllBtn) {
+          saveAllBtn.onclick = async function() {
+            // Collect all rows
+            const rows = document.querySelectorAll('tbody tr');
+            let updates = [];
+            rows.forEach(row => {
+              const userId = row.querySelector('select.leave-type-select')?.getAttribute('data-user');
+              const leaveTypeId = row.querySelector('select.leave-type-select')?.value;
+              const remInput = row.querySelector('input[data-type]');
+              const accruedInput = row.querySelector('input[data-type="accrued"]');
+              if (userId && leaveTypeId && remInput) {
+                let body = { remaining_days: parseInt(remInput.value) };
+                if (accruedInput) {
+                  body.accrued_days = parseInt(accruedInput.value);
+                }
+                updates.push({ userId, leaveTypeId, body });
+              }
+            });
+            // Submit all updates sequentially
+            let allOk = true;
+            for (const upd of updates) {
+              const res = await fetch(`/api/balances/${upd.userId}/${upd.leaveTypeId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(upd.body)
+              });
+              allOk = allOk && res.ok;
+            }
+            if (allOk) {
+              await refreshBalances();
+              showToast('✅ All balances updated');
+            } else {
+              showToast('❌ Error updating some balances');
+            }
+          };
+        }
+>>>>>>> d03d514 (Initial push: leave management system)
     }
+
+    async function updateDepartmentField(){
+      // Always show department dropdown
+      const deptSelect = document.getElementById('u_department');
+      const deptText = document.getElementById('u_department_text');
+      deptSelect.style.display = 'block';
+      deptText.style.display = 'none';
+      try {
+        const depts = await (await fetch('/api/departments')).json();
+        deptSelect.innerHTML = '<option value="">-- Select Department --</option>';
+        depts.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.name;
+          opt.textContent = d.name;
+          deptSelect.appendChild(opt);
+        });
+      } catch(e) { console.error(e); }
+    }
+
+    // Add department button logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const addBtn = document.getElementById('addDeptBtn');
+      const deptText = document.getElementById('u_department_text');
+      const deptSelect = document.getElementById('u_department');
+      addBtn.onclick = function() {
+        deptText.style.display = deptText.style.display === 'block' ? 'none' : 'block';
+        if(deptText.style.display === 'block') {
+          deptText.value = '';
+          deptText.focus();
+        }
+      };
+      deptText.addEventListener('keydown', async function(e) {
+        if(e.key === 'Enter') {
+          const newDept = deptText.value.trim();
+          if(!newDept) return;
+          // Call backend to add department
+          try {
+            const res = await fetch('/api/departments', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: newDept })
+            });
+            if(res.ok) {
+              showToast('Department added');
+              deptText.style.display = 'none';
+              await updateDepartmentField();
+              deptSelect.value = newDept;
+            } else {
+              const data = await res.json();
+              showToast('Error: ' + (data.error || 'Failed to add department'));
+            }
+          } catch(err) {
+            showToast('Network error: ' + err.message);
+          }
+        }
+      });
+    });
 
     async function refreshAnalytics(){
       try{
@@ -484,16 +1028,33 @@
         if(window._typeChart) window._typeChart.destroy();
         
         const ctxD = chartDeptEl.getContext('2d');
+<<<<<<< HEAD
         window._deptChart = new Chart(ctxD, {type:'bar', data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:['#10b981','#0d7a66','#34d399','#6ee7b7'], borderRadius:8, borderSkipped:false}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}, scales:{y:{beginAtZero:true,ticks:{font:{size:12}}}}}});
         
         const ctxT = chartTypeEl.getContext('2d');
         window._typeChart = new Chart(ctxT, {type:'pie', data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#10b981','#0d7a66','#34d399','#6ee7b7','#10b981','#fee140'], borderWidth:3, borderColor:'#ffffff'}]}, options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}}});
+=======
+        window._deptChart = new Chart(ctxD, {
+          type:'bar',
+          data:{labels:deptLabels, datasets:[{label:'Leave days', data:deptData, backgroundColor:['#10b981','#0d7a66','#34d399','#6ee7b7'], borderRadius:8, borderSkipped:false}]},
+          options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}, scales:{y:{beginAtZero:true,ticks:{font:{size:12}}}}}
+        });
+        
+        const ctxT = chartTypeEl.getContext('2d');
+        window._typeChart = new Chart(ctxT, {
+          type:'pie',
+          data:{labels:typeLabels, datasets:[{data:typeData, backgroundColor:['#10b981','#0d7a66','#34d399','#6ee7b7','#10b981','#fee140'], borderWidth:3, borderColor:'#ffffff'}]},
+          options:{plugins:{legend:{labels:{font:{size:14,weight:'bold'}}}}}
+        });
+>>>>>>> d03d514 (Initial push: leave management system)
       }catch(e){ console.error(e); }
     }
 
     document.addEventListener('submit', async e =>{
       if(e.target && e.target.id === 'createUserForm'){
+        alert('Create User form submitted');
         e.preventDefault();
+<<<<<<< HEAD
          const full_name = document.getElementById('u_full_name').value.trim();
          const email = document.getElementById('u_email').value.trim();
          const password = document.getElementById('u_password').value.trim();
@@ -530,16 +1091,195 @@
          } catch(err) {
            showToast('❌ Network error: '+err.message);
          }
+=======
+        const full_name = document.getElementById('u_full_name').value.trim();
+        const email = document.getElementById('u_email').value.trim();
+        const password = document.getElementById('u_password').value.trim();
+        const role = document.getElementById('u_role').value;
+        if(!full_name || !email || !password) {
+          alert('⚠️ Please fill in all required fields');
+          showToast('⚠️ Please fill in all required fields');
+          return;
+        }
+        let department = document.getElementById('u_department').value || null;
+        // If user entered a new department name, use that
+        const deptTextVal = document.getElementById('u_department_text').value.trim();
+        if(deptTextVal) department = deptTextVal;
+        if(!department) { alert('⚠️ Department is required'); showToast('⚠️ Department is required'); return; }
+        try {
+          alert('Sending create user request...');
+          const res = await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name,email,password,role,department})});
+          alert('Received response: status ' + res.status);
+          const data = await res.json();
+          if(res.ok){ 
+            alert('✅ User created and saved to database');
+            showToast('✅ User created and saved to database'); 
+            e.target.reset();
+            document.getElementById('u_department').innerHTML = '<option value="">-- Select Department --</option>';
+            document.getElementById('u_role').value = 'employee';
+            updateDepartmentField();
+            await refreshUsers(); 
+            await refreshBalances(); 
+          } else { 
+            alert('❌ Error: '+(data.error||'Failed to create user'));
+            showToast('❌ Error: '+(data.error||'Failed to create user')); 
+          }
+        } catch(err) {
+          alert('❌ Network error: '+err.message);
+          showToast('❌ Network error: '+err.message);
+        }
+>>>>>>> d03d514 (Initial push: leave management system)
       }
     });
 
     // Reset password modal handlers
-    document.getElementById('resetCancel').onclick = ()=>{ document.querySelector('#resetModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('resetModal').classList.add('d-none'),220); };
+    function showResetModal(userId, userName) {
+      const modal = document.getElementById('resetModal');
+      const fade = modal.querySelector('.modal-fade');
+      modal.classList.remove('d-none');
+      setTimeout(() => fade.classList.add('show'), 10);
+      document.getElementById('resetModal').dataset.userId = userId;
+      document.getElementById('resetName').textContent = userName;
+      const pwInput = document.getElementById('resetPassword');
+      pwInput.disabled = false;
+      pwInput.value = '';
+      pwInput.focus();
+    }
+    document.getElementById('resetCancel').onclick = ()=>{
+      document.querySelector('#resetModal .modal-fade').classList.remove('show');
+      setTimeout(()=> document.getElementById('resetModal').classList.add('d-none'),220);
+    };
     document.getElementById('resetSubmit').onclick = async ()=>{
-      const id = document.getElementById('resetModal').dataset.userId; const pw = document.getElementById('resetPassword').value;
+      const id = document.getElementById('resetModal').dataset.userId;
+      const pw = document.getElementById('resetPassword').value;
       if(!pw){ alert('Enter a password'); return; }
-      const res = await fetch('/api/users/'+id+'/reset_password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
-      if(res.ok){ showToast('Password reset'); document.getElementById('resetPassword').value=''; document.getElementById('resetCancel').click(); } else { const j=await res.json(); showToast('Error: '+(j.error||'')); }
+      const res = await fetch('/api/users/'+id+'/reset_password',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({password:pw})
+      });
+      if(res.ok){
+        showToast('Password reset');
+        document.getElementById('resetPassword').value='';
+        document.getElementById('resetCancel').click();
+      } else {
+        const j=await res.json();
+        showToast('Error: '+(j.error||''));
+      }
+    };
+    // Patch: Attach showResetModal to user list (if not already attached)
+    window.showResetModal = showResetModal;
+
+    // Action modal handlers (approve/reject)
+    document.addEventListener('DOMContentLoaded', function() {
+      // (handlers now attached after modal open)
+    });
+
+    // Edit user modal handlers
+    document.getElementById('editCancel').onclick = ()=>{ document.querySelector('#editModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('editModal').classList.add('d-none'),220); };
+    document.getElementById('editSubmit').onclick = async ()=>{
+      const id = document.getElementById('editModal').dataset.userId;
+      const fullName = document.getElementById('editFullName').value.trim();
+      const role = document.getElementById('editRole').value;
+      const dept = document.getElementById('editDept').value.trim() || null;
+      
+      if(!fullName){ showToast('Full name is required'); return; }
+      
+      const res = await fetch('/api/users/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:fullName, role:role, department:dept})});
+      if(res.ok){ 
+        showToast('✅ User updated successfully'); 
+        document.getElementById('editCancel').click(); 
+        await refreshUsers(); 
+        await refreshBalances(); 
+      } else { 
+        const j=await res.json(); 
+        showToast('Error: '+(j.error||'Failed to update user')); 
+      }
+    };
+
+        // Update balances (fix: wrap in async IIFE)
+        (async () => {
+          const balDiv = document.getElementById('editBalances');
+          const inputs = balDiv.querySelectorAll('input[data-leavetype]');
+          let ok = true;
+          for (const input of inputs) {
+            const leaveTypeId = input.getAttribute('data-leavetype');
+            const val = parseInt(input.value);
+            const balRes = await fetch(`/api/balances/${id}/${leaveTypeId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({remaining_days:val})});
+            ok = ok && balRes.ok;
+          }
+          if(ok){ 
+            showToast('✅ User and balances updated'); 
+            document.getElementById('editCancel').click(); 
+            await refreshUsers(); 
+            await refreshBalances(); 
+          } else { 
+            showToast('Error updating user or balances'); 
+          }
+        })();
+
+    // Acting HOD modal handlers
+    document.getElementById('openActingHodBtn').onclick = async ()=>{
+      // Load departments and employees
+      const depts = await (await fetch('/api/departments')).json();
+      const users = await (await fetch('/api/users')).json();
+      
+      const deptSel = document.getElementById('hodDeptSelect');
+      deptSel.innerHTML = '';
+      depts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.name;
+        deptSel.appendChild(opt);
+      });
+      
+      // Store users globally for selection
+      window.allUsers = users;
+      
+      // Populate user dropdown with employees in first dept
+      if(depts.length > 0) await updateActingHodUsers(depts[0].id);
+      
+      document.getElementById('actingHodModal').classList.remove('d-none');
+      setTimeout(()=> document.querySelector('#actingHodModal .modal-fade').classList.add('show'),10);
+    };
+    
+    document.getElementById('hodDeptSelect').onchange = async ()=>{
+      const deptId = parseInt(document.getElementById('hodDeptSelect').value);
+      await updateActingHodUsers(deptId);
+    };
+    
+    async function updateActingHodUsers(deptId){
+      const depts = await (await fetch('/api/departments')).json();
+      const dept = depts.find(d => d.id === deptId);
+      const users = window.allUsers || [];
+      
+      // Filter employees in this department
+      const empls = users.filter(u => u.department === dept?.name && u.role === 'employee');
+      
+      const userSel = document.getElementById('hodUserSelect');
+      userSel.innerHTML = '<option value="">-- Clear Acting HOD --</option>';
+      empls.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.full_name + ' (' + u.email + ')';
+        userSel.appendChild(opt);
+      });
+    }
+    
+    document.getElementById('actingHodCancel').onclick = ()=>{ document.querySelector('#actingHodModal .modal-fade').classList.remove('show'); setTimeout(()=> document.getElementById('actingHodModal').classList.add('d-none'),220); };
+    document.getElementById('actingHodSubmit').onclick = async ()=>{
+      const deptId = parseInt(document.getElementById('hodDeptSelect').value);
+      const userId = document.getElementById('hodUserSelect').value || null;
+      const userIdNum = userId ? parseInt(userId) : null;
+      
+      const res = await fetch(`/api/departments/${deptId}/acting_hod`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id: userIdNum})});
+      if(res.ok){ 
+        showToast(userIdNum ? '✅ Acting HOD assigned' : '✅ Acting HOD cleared'); 
+        document.getElementById('actingHodCancel').click(); 
+      } else { 
+        const j=await res.json(); 
+        showToast('Error: '+(j.error||'Failed to update')); 
+      }
     };
 
     // Action modal handlers (approve/reject)
@@ -650,12 +1390,27 @@
         userBalanceMap[b.user_id][b.leave_type] = b.remaining_days;
       });
       
+<<<<<<< HEAD
       let html = `<div style='overflow-x:auto;'><table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>👤 Name</th><th style='padding:12px;font-weight:600;'>🏢 Department</th><th style='padding:12px;font-weight:600;'>📅 Annual</th><th style='padding:12px;font-weight:600;'>🏥 Sick</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>⚙️ Actions</th></tr></thead><tbody>`;
       users.forEach((u,idx)=>{
         const annual = userBalanceMap[u.id]?.Annual || 0;
         const sick = userBalanceMap[u.id]?.Sick || 0;
         const bgColor = idx % 2 === 0 ? '#f8f9fa' : '#ffffff';
         html += `<tr style='background:${bgColor};border-radius:12px;'>\n          <td style='border-radius:8px 0 0 8px;padding:12px;'><strong style='display:block;'>${u.full_name}</strong><div class='text-muted' style='font-size:12px;'>${u.email}</div></td>\n          <td style='padding:12px;'>${u.department || '—'}</td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${annual}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #34d399 0%, #10b981 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${sick}</span></td>\n          <td style='border-radius:0 8px 8px 0;padding:12px;'>\n            <button class='btn btn-sm' style='background:#10b981;color:white;border:none;border-radius:6px;' data-edit='${u.id}'>✏️ Edit</button>\n            <button class='btn btn-sm' style='background:#f59e0b;color:white;border:none;border-radius:6px;margin-left:4px;' data-reset='${u.id}' data-name='${u.full_name}'>🔐 Reset</button>\n            <button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${u.id}'>🗑️ Delete</button>\n          </td>\n        </tr>`;
+=======
+      let html = `<div style='overflow-x:auto;'><table class='table table-hover' style='border-collapse:separate;border-spacing:0 8px;'><thead><tr style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;'><th style='border-radius:8px 0 0 0;padding:12px;font-weight:600;'>👤 Name</th><th style='padding:12px;font-weight:600;'>🏢 Department</th><th style='padding:12px;font-weight:600;'>📅 Annual</th><th style='padding:12px;font-weight:600;'>➕ Accrued Days</th><th style='padding:12px;font-weight:600;'>🏥 Sick</th><th style='border-radius:0 8px 0 0;padding:12px;font-weight:600;'>⚙️ Actions</th></tr></thead><tbody>`;
+      users.forEach((u,idx)=>{
+        const annual = userBalanceMap[u.id]?.Annual || 0;
+        const sick = userBalanceMap[u.id]?.Sick || 0;
+        // Find accrued_days from balances (Annual row)
+        let accrued = 0;
+        if (balances && Array.isArray(balances)) {
+          const bal = balances.find(b => b.user_id === u.id && b.leave_type === 'Annual');
+          accrued = bal && bal.accrued_days != null ? bal.accrued_days : 0;
+        }
+        const bgColor = idx % 2 === 0 ? '#f8f9fa' : '#ffffff';
+        html += `<tr style='background:${bgColor};border-radius:12px;'>\n          <td style='border-radius:8px 0 0 8px;padding:12px;'><strong style='display:block;'>${u.full_name}</strong><div class='text-muted' style='font-size:12px;'>${u.email}</div></td>\n          <td style='padding:12px;'>${u.department || '—'}</td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #10b981 0%, #0d7a66 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${annual}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #818cf8 0%, #a5b4fc 100%);color:#312e81;padding:4px 12px;border-radius:20px;font-weight:600;'>${accrued}</span></td>\n          <td style='padding:12px;'><span style='background:linear-gradient(135deg, #34d399 0%, #10b981 100%);color:white;padding:4px 12px;border-radius:20px;font-weight:600;'>${sick}</span></td>\n          <td style='border-radius:0 8px 8px 0;padding:12px;'>\n            <button class='btn btn-sm' style='background:#10b981;color:white;border:none;border-radius:6px;' data-edit='${u.id}'>✏️ Edit</button>\n            <button class='btn btn-sm' style='background:#f59e0b;color:white;border:none;border-radius:6px;margin-left:4px;' data-reset='${u.id}' data-name='${u.full_name}'>🔐 Reset</button>\n            <button class='btn btn-sm' style='background:#ef4444;color:white;border:none;border-radius:6px;margin-left:4px;' data-delete='${u.id}'>🗑️ Delete</button>\n          </td>\n        </tr>`;
+>>>>>>> d03d514 (Initial push: leave management system)
       });
       html += `</tbody></table></div>`;
       list.innerHTML = html;

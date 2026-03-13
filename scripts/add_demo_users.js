@@ -16,12 +16,21 @@ const users = [
   { full_name: 'Patrick Ndegwa', email: 'patrick.ndegwa@company.com', role: 'employee', department: 'Finance' },
   { full_name: 'Margaret Njeri', email: 'margaret.njeri@company.com', role: 'employee', department: 'Finance' },
   { full_name: 'Elizabeth Mungai', email: 'elizabeth.mungai@company.com', role: 'HOD', department: 'Finance' },
+<<<<<<< HEAD
   // Customer Service
   { full_name: 'Juliana Jeptoo', email: 'juliana.jeptoo@company.com', role: 'employee', department: 'Customer Service' },
   { full_name: 'Faith Bonareri', email: 'faith.bonareri@company.com', role: 'employee', department: 'Customer Service' },
   { full_name: 'Patience Mutunga', email: 'patience.mutunga@company.com', role: 'HOD', department: 'Customer Service' },
   { full_name: 'Eva Mukami', email: 'eva.mukami@company.com', role: 'employee', department: 'Customer Service' },
   { full_name: 'Peter Kariuki', email: 'peter.kariuki@company.com', role: 'employee', department: 'Customer Service' }
+=======
+  // Debt Collection
+  { full_name: 'Juliana Jeptoo', email: 'juliana.jeptoo@company.com', role: 'employee', department: 'Debt Collection' },
+  { full_name: 'Faith Bonareri', email: 'faith.bonareri@company.com', role: 'employee', department: 'Debt Collection' },
+  { full_name: 'Patience Mutunga', email: 'patience.mutunga@company.com', role: 'HOD', department: 'Debt Collection' },
+  { full_name: 'Eva Mukami', email: 'eva.mukami@company.com', role: 'employee', department: 'Debt Collection' },
+  { full_name: 'Peter Kariuki', email: 'peter.kariuki@company.com', role: 'employee', department: 'Debt Collection' }
+>>>>>>> d03d514 (Initial push: leave management system)
 ];
 
 function generateUsername(email, name) {

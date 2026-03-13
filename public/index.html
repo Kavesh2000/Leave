@@ -293,7 +293,9 @@
           const res = await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:form.email.value,password:form.password.value})});
           const j = await res.json();
           if(res.ok){
-            if(j.role==='employee') location.href='/employee.html';
+            if(j.redirect){
+              location.href = j.redirect;
+            }else if(j.role==='employee') location.href='/employee.html';
             else if(j.role==='HOD') location.href='/hod.html';
             else location.href='/admin.html';
           }else {

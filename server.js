@@ -10,8 +10,137 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'leave-secret', resave: false, saveUninitialized: false }));
 
+<<<<<<< HEAD
 // database helper is initialized later with initPool()
 
+=======
+// ===== HR USERS LISTING =====
+app.get('/api/hr/users', requireAuth, async (req, res) => {
+  // Allow only HR role (Elizabeth or any user with role 'HR')
+  if (req.session.role !== 'HR' && req.session.userEmail !== 'elizabeth.mungai@maishabank.com') {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  try {
+    // Get all users
+    const usersResult = await query(
+      `SELECT id, full_name, email, role, department FROM users ORDER BY full_name`
+    );
+    const users = usersResult.recordset;
+
+    // Get all balances
+    const balancesResult = await query(
+      `SELECT b.user_id, lt.name as leave_type, b.remaining_days, b.accrued_days
+       FROM balance b
+       JOIN leave_type lt ON lt.id = b.leave_type_id`
+    );
+    const balances = balancesResult.recordset;
+
+    // Map balances to users (same as admin panel)
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.id] = { ...u, annual: 0, sick: 0, maternity: 0, paternity: 0, accrued_days: 0 };
+    });
+    balances.forEach(b => {
+      const u = userMap[b.user_id];
+      if (u) {
+        const type = b.leave_type.toLowerCase();
+        if (type === 'annual') {
+          u.annual = b.remaining_days;
+          u.accrued_days = b.accrued_days ?? 0;
+        }
+        else if (type === 'sick') u.sick = b.remaining_days;
+        else if (type === 'maternity') u.maternity = b.remaining_days;
+        else if (type === 'paternity') u.paternity = b.remaining_days;
+      }
+    });
+    res.json(Object.values(userMap));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// Test endpoint for Outlook SMTP
+app.get('/api/test_outlook_email', async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.office365.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'automation@maishabank.com',
+        pass: 'test.test800'
+      }
+    });
+    const mailOptions = {
+      from: 'automation@maishabank.com',
+      to: req.query.to || 'automation@maishabank.com',
+      subject: 'Test Email from Leave System',
+      text: 'This is a test email from the Leave System.'
+    };
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('SMTP TEST ERROR:', error);
+        return res.status(500).json({ error: error.toString() });
+      } else {
+        console.log('SMTP TEST SENT:', info.response);
+        return res.json({ ok: true, info: info.response });
+      }
+    });
+  } catch (err) {
+    console.error('SMTP TEST FATAL:', err);
+    res.status(500).json({ error: err.toString() });
+  }
+});
+
+// database helper is initialized later with initPool()
+
+const crypto = require('crypto');
+const passwordResetTokens = {};
+
+app.get('/api/password_change/:token', async (req, res) => {
+  const { token } = req.params;
+  const entry = passwordResetTokens[token];
+  if (!entry || Date.now() > entry.expiry) {
+    return res.status(400).send('Invalid or expired link');
+  }
+  // Render a simple HTML form for password change
+  res.send(`
+    <html><body style="font-family:sans-serif;background:#f9fafb;padding:40px;">
+      <h2>Change Your Password</h2>
+      <form method="POST" action="/api/password_change/${token}">
+        <input type="password" name="password" placeholder="New password" required minlength="4" style="padding:8px;margin-bottom:12px;width:220px;"/><br>
+        <button type="submit" style="padding:8px 16px;background:#10b981;color:#fff;border:none;border-radius:4px;">Change Password</button>
+      </form>
+    </body></html>
+  `);
+});
+
+app.post('/api/password_change/:token', async (req, res) => {
+  let body = '';
+  req.on('data', chunk => { body += chunk; });
+  req.on('end', async () => {
+    const { token } = req.params;
+    const entry = passwordResetTokens[token];
+    if (!entry || Date.now() > entry.expiry) {
+      return res.status(400).send('Invalid or expired link');
+    }
+    const params = new URLSearchParams(body);
+    const password = params.get('password');
+    if (!password || password.length < 4) {
+      return res.status(400).send('Password too short');
+    }
+    const hash = bcrypt.hashSync(password, 10);
+    await query(
+      `UPDATE users SET password_hash = $1 WHERE id = $2`,
+      [hash, entry.userId]
+    );
+    delete passwordResetTokens[token];
+    res.send('<b>Password changed successfully. You can now log in.</b>');
+  });
+});
+>>>>>>> d03d514 (Initial push: leave management system)
 
 const HOLIDAYS = [
   '2026-01-01',
@@ -198,6 +327,7 @@ app.post('/api/login', async (req, res) => {
     req.session.role = user.role;
     // support legacy schema where department may be stored as department_id
     req.session.department = user.department || (user.department_id ? String(user.department_id) : null);
+<<<<<<< HEAD
 
     res.json({
       id: user.id,
@@ -359,12 +489,34 @@ app.get('/api/leave_requests', requireAuth, async (req, res) => {
       );
     }
     res.json((result && result.recordset) || []);
+=======
+
+    // Special redirect for Elizabeth Mungai (HR)
+    if (user.email === 'elizabeth.mungai@maishabank.com') {
+      res.json({
+        id: user.id,
+        full_name: user.full_name,
+        role: 'HR',
+        department: req.session.department,
+        redirect: '/hr.html'
+      });
+    } else {
+      res.json({
+        id: user.id,
+        full_name: user.full_name,
+        role: user.role,
+        department: req.session.department,
+        redirect: `/${user.role === 'admin' ? 'admin' : user.role === 'HOD' ? 'hod' : 'employee'}.html`
+      });
+    }
+>>>>>>> d03d514 (Initial push: leave management system)
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'db' });
   }
 });
 
+<<<<<<< HEAD
 app.post('/api/leave_requests/:id/hod_action', requireAuth, async (req, res) => {
   const id = parseInt(req.params.id);
   const { action, comment } = req.body;
@@ -433,6 +585,409 @@ app.post('/api/leave_requests/:id/hod_action', requireAuth, async (req, res) => 
   }
 });
 
+=======
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.json({ ok: true });
+  });
+});
+
+// ===== PROFILE =====
+
+app.get('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, full_name, email, role, department FROM users WHERE id = $1',
+      [req.session.userId]
+    );
+    if (!result.recordset[0]) return res.status(404).json({ error: 'not found' });
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.get('/api/me', requireAuth, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT id, full_name, email, role, department FROM users WHERE id = $1',
+      [req.session.userId]
+    );
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+
+
+// ===== LEAVE REQUESTS =====
+
+app.post('/api/leave_requests', requireAuth, async (req, res) => {
+  const { leave_type_id, start_date, end_date, reason } = req.body;
+  const days = countWorkingDays(start_date, end_date, HOLIDAYS);
+  if (days <= 0) return res.status(400).json({ error: 'invalid date range' });
+
+  try {
+    const balanceResult = await query(
+      'SELECT remaining_days FROM balance WHERE user_id = $1 AND leave_type_id = $2',
+      [req.session.userId, leave_type_id]
+    );
+    const balance = balanceResult.recordset[0];
+    if (!balance) return res.status(400).json({ error: 'no balance' });
+    if (balance.remaining_days < days) {
+      return res.status(400).json({ error: 'insufficient balance' });
+    }
+
+    const now = new Date();
+    const insertResult = await query(
+      `INSERT INTO leave_requests(user_id, leave_type_id, start_date, end_date, days, reason, status, created_at, updated_at)
+       OUTPUT INSERTED.id AS id
+       VALUES($1,$2,$3,$4,$5,$6,'pending',$7,$7)`,
+      [req.session.userId, leave_type_id, start_date, end_date, days, reason, now]
+    );
+    const requestId = insertResult.recordset[0].id;
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'CREATE',
+      'leave_request',
+      requestId,
+      `Submitted leave request: ${days} days from ${start_date} to ${end_date}`
+    );
+    // Notify HR of new leave request
+    try {
+      const userRes = await query('SELECT full_name, email FROM users WHERE id = $1', [req.session.userId]);
+      const user = userRes.recordset[0];
+      // Get all HR emails
+      const hrRes = await query("SELECT email FROM users WHERE role = 'HR'");
+      const hrEmails = hrRes.recordset.map(r => r.email);
+      if (hrEmails.length > 0) {
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.office365.com',
+            port: 587,
+            secure: false,
+            auth: { user: 'automation@maishabank.com', pass: 'test.test800' }
+        });
+        const mailOptions = {
+          from: 'automation@maishabank.com',
+          to: hrEmails.join(','),
+          subject: 'New Leave Request Submitted',
+          text: `${user.full_name} (${user.email}) has submitted a leave request for ${days} days (${start_date} to ${end_date}). Reason: ${reason}`
+        };
+        transporter.sendMail(mailOptions, (error, info) => {
+          if (error) console.error('Leave request email error:', error);
+          else console.log('Leave request email sent:', info.response);
+        });
+      }
+    } catch (e) { console.error('Notify HR error:', e); }
+    // ===== HR APPROVAL ENDPOINT =====
+    app.post('/api/leave_requests/:id/hr_action', requireAuth, async (req, res) => {
+      if (req.session.role !== 'HR') return res.status(403).json({ error: 'forbidden' });
+      const id = parseInt(req.params.id);
+      const { action, comment } = req.body;
+      try {
+        const result = await query(
+          `SELECT * FROM leave_requests WHERE id = $1`,
+          [id]
+        );
+        const lr = result.recordset[0];
+        if (!lr) return res.status(404).json({ error: 'not found' });
+        const now = new Date();
+        if (action === 'approve') {
+          if (lr.status !== 'pending') {
+            return res.status(400).json({ error: `Cannot approve: request must be in 'pending' status, currently: '${lr.status}'` });
+          }
+          await query(
+            `UPDATE leave_requests SET status='hr_approved', hod_comment=$1, updated_at=$2 WHERE id=$3`,
+            [comment, now, id]
+          );
+          await logAudit(
+            req.session.userId,
+            req.session.userEmail,
+            'HR_APPROVE',
+            'leave_request',
+            id,
+            `HR approved leave request ${id}. Comment: ${comment}`
+          );
+          res.json({ ok: true });
+        } else if (action === 'reject') {
+          await query(
+            `UPDATE leave_requests SET status='rejected', hod_comment=$1, updated_at=$2 WHERE id=$3`,
+            [comment, now, id]
+          );
+          await logAudit(
+            req.session.userId,
+            req.session.userEmail,
+            'HR_REJECT',
+            'leave_request',
+            id,
+            `HR rejected leave request ${id}. Comment: ${comment}`
+          );
+          // Notify employee
+          try {
+            const userRes = await query('SELECT full_name, email FROM users WHERE id = $1', [lr.user_id]);
+            const user = userRes.recordset[0];
+            const nodemailer = require('nodemailer');
+            const transporter = nodemailer.createTransport({
+              host: 'smtp.office365.com',
+              port: 587,
+              secure: false,
+              auth: { user: 'automation@maishabank.com', pass: 'test.test800' }
+            });
+            transporter.sendMail({
+              from: 'automation@maishabank.com',
+              to: user.email,
+              subject: 'Your Leave Request was Rejected by HR',
+              text: `Your leave request (ID: ${id}) was rejected by HR. Reason: ${comment}`
+            }, (error, info) => {
+              if (error) console.error('HR rejection email to employee error:', error);
+              else console.log('HR rejection email to employee sent:', info.response);
+            });
+          } catch (e) { console.error('Notify employee on HR rejection error:', e); }
+          res.json({ ok: true });
+        } else {
+          res.status(400).json({ error: 'invalid action' });
+        }
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'db' });
+      }
+    });
+    res.json({ ok: true, id: requestId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.post('/api/apply', requireAuth, async (req, res) => {
+  const { leave_type_id, start_date, end_date, reason } = req.body;
+  const days = countWorkingDays(start_date, end_date, HOLIDAYS);
+  console.log('[LEAVE APPLY] User:', req.session.userId, 'Type:', leave_type_id, 'Start:', start_date, 'End:', end_date, 'Days:', days, 'Reason:', reason);
+  if (days <= 0) {
+    console.log('[LEAVE APPLY] Invalid date range');
+    return res.status(400).json({ error: 'invalid date range' });
+  }
+
+  try {
+    const balanceResult = await query(
+      'SELECT remaining_days FROM balance WHERE user_id = $1 AND leave_type_id = $2',
+      [req.session.userId, leave_type_id]
+    );
+    const balance = balanceResult.recordset[0];
+    if (!balance) {
+      console.log('[LEAVE APPLY] No balance for user', req.session.userId, 'type', leave_type_id);
+      return res.status(400).json({ error: 'no balance' });
+    }
+    if (balance.remaining_days < days) {
+      console.log('[LEAVE APPLY] Insufficient balance for user', req.session.userId, 'type', leave_type_id, 'needed', days, 'remaining', balance.remaining_days);
+      return res.status(400).json({ error: 'insufficient balance' });
+    }
+
+    const now = new Date();
+    const insertResult = await query(
+      `INSERT INTO leave_requests(user_id, leave_type_id, start_date, end_date, days, reason, status, created_at, updated_at)
+       OUTPUT INSERTED.id AS id
+       VALUES($1,$2,$3,$4,$5,$6,'pending',$7,$7)`,
+      [req.session.userId, leave_type_id, start_date, end_date, days, reason, now]
+    );
+    const requestId = insertResult.recordset[0].id;
+    console.log('[LEAVE APPLY] Inserted leave request ID:', requestId);
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'CREATE',
+      'leave_request',
+      requestId,
+      `Submitted leave request: ${days} days from ${start_date} to ${end_date}`
+    );
+    res.json({ ok: true, id: requestId });
+  } catch (err) {
+    console.error('[LEAVE APPLY ERROR]', err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.get('/api/leave_requests', requireAuth, async (req, res) => {
+  const role = req.session.role;
+  try {
+    let result;
+    if (role === 'employee') {
+      result = await query(
+        `SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr
+         JOIN users u ON u.id=lr.user_id
+         JOIN leave_type lt ON lt.id=lr.leave_type_id
+         WHERE lr.user_id = $1 ORDER BY lr.created_at DESC`,
+        [req.session.userId]
+      );
+    } else if (role === 'HR') {
+      // HR sees all requests needing first approval (status 'pending')
+      result = await query(
+        `SELECT lr.*, u.full_name, lt.name as leave_type FROM leave_requests lr
+         JOIN users u ON u.id=lr.user_id
+         JOIN leave_type lt ON lt.id=lr.leave_type_id
+         WHERE lr.status = 'pending'
+         ORDER BY lr.created_at DESC`
+      );
+    } else if (role === 'admin') {
+      // Admin sees leave requests only after HR approval
+      result = await query(
+        `SELECT lr.*, u.full_name, lt.name as leave_type, COALESCE(b.remaining_days, lt.default_days) as remaining_days
+         FROM leave_requests lr
+         JOIN users u ON u.id=lr.user_id
+         JOIN leave_type lt ON lt.id=lr.leave_type_id
+         LEFT JOIN balance b ON b.user_id=lr.user_id AND b.leave_type_id=lr.leave_type_id
+         WHERE lr.status = 'hr_approved'
+         ORDER BY lr.created_at DESC`
+      );
+    }
+    res.json((result && result.recordset) || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.post('/api/leave_requests/:id/hod_action', requireAuth, async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { action, comment } = req.body;
+
+  try {
+    const result = await query(
+      `SELECT lr.*, u.department FROM leave_requests lr
+       JOIN users u ON u.id=lr.user_id WHERE lr.id = $1`,
+      [id]
+    );
+
+    const lr = result.recordset[0];
+    if (!lr) return res.status(404).json({ error: 'not found' });
+
+    const deptRes = await query(
+      `SELECT hod_email, acting_hod_email FROM department WHERE name = $1`,
+      [lr.department]
+    );
+    const dept = (deptRes.recordset && deptRes.recordset[0]) || {};
+    const allowedEmails = [dept.hod_email, dept.acting_hod_email].filter(Boolean);
+    if (!allowedEmails.includes(req.session.userEmail)) {
+      return res.status(403).json({ error: 'not authorized for this department (email check)' });
+    }
+
+    if (lr.status !== 'pending') {
+      return res.status(400).json({
+        error: `Cannot approve/reject: request must be in "pending" status, currently: "${lr.status}"`
+      });
+    }
+
+    const now = new Date();
+    if (action === 'approve') {
+      await query(
+        `UPDATE leave_requests SET status='hod_approved', hod_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'APPROVE',
+        'leave_request',
+        id,
+        `HOD approved leave request ${id}. Comment: ${comment}`
+      );
+      // Notify employee and admin
+      try {
+        const userRes = await query('SELECT full_name, email FROM users WHERE id = $1', [lr.user_id]);
+        const user = userRes.recordset[0];
+        const adminRes = await query("SELECT email FROM users WHERE role = 'admin'");
+        const adminEmails = adminRes.recordset.map(a => a.email);
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.office365.com',
+          port: 587,
+          secure: false,
+          auth: { user: 'automation@maishabank.com', pass: 'test.test700' }
+        });
+        // Notify employee
+        transporter.sendMail({
+          from: 'automation@maishabank.com',
+          to: user.email,
+          subject: 'Your Leave Request was Approved by HOD',
+          text: `Your leave request (ID: ${id}) was approved by HOD. Comment: ${comment}`
+        }, (error, info) => {
+          if (error) console.error('HOD approval email to employee error:', error);
+          else console.log('HOD approval email to employee sent:', info.response);
+        });
+        // Notify admin
+        if (adminEmails.length > 0) {
+          transporter.sendMail({
+            from: 'automation@maishabank.com',
+            to: adminEmails.join(','),
+            subject: 'Leave Request Awaiting Admin Approval',
+            text: `Leave request (ID: ${id}) for ${user.full_name} has been approved by HOD and awaits your review.`
+          }, (error, info) => {
+            if (error) console.error('HOD approval email to admin error:', error);
+            else console.log('HOD approval email to admin sent:', info.response);
+          });
+        }
+      } catch (e) { console.error('Notify on HOD approval error:', e); }
+      res.json({ ok: true });
+    } else if (action === 'reject') {
+      await query(
+        `UPDATE leave_requests SET status='rejected', hod_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'REJECT',
+        'leave_request',
+        id,
+        `HOD rejected leave request ${id}. Comment: ${comment}`
+      );
+      // Notify employee with HOD info
+      try {
+        const userRes = await query('SELECT full_name, email FROM users WHERE id = $1', [lr.user_id]);
+        const user = userRes.recordset[0];
+        const hodName = req.session.userEmail;
+        const hodFullName = req.session.userEmail;
+        // Try to get HOD full name from users table
+        let hodDisplay = req.session.userEmail;
+        try {
+          const hodRes = await query('SELECT full_name FROM users WHERE email = $1', [req.session.userEmail]);
+          if (hodRes.recordset[0] && hodRes.recordset[0].full_name) {
+            hodDisplay = hodRes.recordset[0].full_name + ' (' + req.session.userEmail + ')';
+          }
+        } catch {}
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.office365.com',
+          port: 587,
+          secure: false,
+          auth: { user: 'automation@maishabank.com', pass: 'test.test700' }
+        });
+        transporter.sendMail({
+          from: 'automation@maishabank.com',
+          to: user.email,
+          subject: 'Your Leave Request was Rejected by HOD',
+          text: `Your leave request (ID: ${id}) was rejected by HOD: ${hodDisplay}\nReason: ${comment}`
+        }, (error, info) => {
+          if (error) console.error('HOD rejection email to employee error:', error);
+          else console.log('HOD rejection email to employee sent:', info.response);
+        });
+      } catch (e) { console.error('Notify on HOD rejection error:', e); }
+      res.json({ ok: true });
+    } else {
+      res.status(400).json({ error: 'invalid action' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+>>>>>>> d03d514 (Initial push: leave management system)
 app.post('/api/leave_requests/:id/admin_action', requireAuth, async (req, res) => {
   if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   const id = parseInt(req.params.id);
@@ -452,6 +1007,7 @@ app.post('/api/leave_requests/:id/admin_action', requireAuth, async (req, res) =
       if (lr.status !== 'hod_approved') {
         return res.status(400).json({
           error: `Cannot approve: request must be in "hod_approved" status, currently: "${lr.status}"`
+<<<<<<< HEAD
         });
       }
 
@@ -529,6 +1085,159 @@ app.get('/api/balances', requireAuth, async (req, res) => {
       );
     }
     res.json((result && result.recordset) || []);
+=======
+        });
+      }
+
+      const balanceResult = await query(
+        `SELECT remaining_days FROM balance WHERE user_id = $1 AND leave_type_id = $2`,
+        [lr.user_id, lr.leave_type_id]
+      );
+
+      const balance = balanceResult.recordset[0];
+      if (!balance) return res.status(400).json({ error: 'no balance' });
+      if (balance.remaining_days < lr.days) {
+        return res.status(400).json({ error: 'insufficient balance' });
+      }
+
+      const newRem = balance.remaining_days - lr.days;
+      await query(
+        `UPDATE balance SET remaining_days = $1 WHERE user_id = $2 AND leave_type_id = $3`,
+        [newRem, lr.user_id, lr.leave_type_id]
+      );
+
+      await query(
+        `UPDATE leave_requests SET status='admin_approved', admin_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'APPROVE',
+        'leave_request',
+        id,
+        `Admin approved leave request ${id}. Comment: ${comment}`
+      );
+      // Notify employee
+      try {
+        const userRes = await query('SELECT full_name, email FROM users WHERE id = $1', [lr.user_id]);
+        const user = userRes.recordset[0];
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.office365.com',
+          port: 587,
+          secure: false,
+          auth: { user: 'automation@maishabank.com', pass: 'test.test700' }
+        });
+        transporter.sendMail({
+          from: 'automation@maishabank.com',
+          to: user.email,
+          subject: 'Your Leave Request was Approved by Admin',
+          text: `Your leave request (ID: ${id}) was approved by Admin. Comment: ${comment}`
+        }, (error, info) => {
+          if (error) console.error('Admin approval email to employee error:', error);
+          else console.log('Admin approval email to employee sent:', info.response);
+        });
+      } catch (e) { console.error('Notify on admin approval error:', e); }
+      res.json({ ok: true });
+    } else if (action === 'reject') {
+      await query(
+        `UPDATE leave_requests SET status='rejected', admin_comment=$1, updated_at=$2 WHERE id=$3`,
+        [comment, now, id]
+      );
+      await logAudit(
+        req.session.userId,
+        req.session.userEmail,
+        'REJECT',
+        'leave_request',
+        id,
+        `Admin rejected leave request ${id}. Comment: ${comment}`
+      );
+      // Notify employee with admin info
+      try {
+        const userRes = await query('SELECT full_name, email FROM users WHERE id = $1', [lr.user_id]);
+        const user = userRes.recordset[0];
+        let adminDisplay = req.session.userEmail;
+        try {
+          const adminRes = await query('SELECT full_name FROM users WHERE email = $1', [req.session.userEmail]);
+          if (adminRes.recordset[0] && adminRes.recordset[0].full_name) {
+            adminDisplay = adminRes.recordset[0].full_name + ' (' + req.session.userEmail + ')';
+          }
+        } catch {}
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.office365.com',
+          port: 587,
+          secure: false,
+          auth: { user: 'automation@maishabank.com', pass: 'test.test700' }
+        });
+        transporter.sendMail({
+          from: 'automation@maishabank.com',
+          to: user.email,
+          subject: 'Your Leave Request was Rejected by Admin',
+          text: `Your leave request (ID: ${id}) was rejected by Admin: ${adminDisplay}\nReason: ${comment}`
+        }, (error, info) => {
+          if (error) console.error('Admin rejection email to employee error:', error);
+          else console.log('Admin rejection email to employee sent:', info.response);
+        });
+      } catch (e) { console.error('Notify on admin rejection error:', e); }
+      res.json({ ok: true });
+    } else {
+      res.status(400).json({ error: 'invalid action' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+// ===== BALANCES =====
+
+app.get('/api/balances', requireAuth, async (req, res) => {
+  try {
+    // Get all users
+    const usersResult = await query(
+      `SELECT id, full_name, department FROM users ORDER BY full_name`
+    );
+    const users = usersResult.recordset;
+
+    // Get all leave types
+    const leaveTypesResult = await query(
+      `SELECT id, name, default_days FROM leave_type ORDER BY id`
+    );
+    const leaveTypes = leaveTypesResult.recordset;
+
+    // Get all balances
+    const balancesResult = await query(
+      `SELECT * FROM balance`
+    );
+    const balances = balancesResult.recordset;
+
+    // Map balances for quick lookup
+    const balanceMap = {};
+    balances.forEach(b => {
+      balanceMap[`${b.user_id}-${b.leave_type_id}`] = b;
+    });
+
+    // Build result: for each user, for each leave type, return balance or default
+    const result = [];
+    users.forEach(u => {
+      leaveTypes.forEach(lt => {
+        const key = `${u.id}-${lt.id}`;
+        const bal = balanceMap[key] || {};
+        result.push({
+          user_id: u.id,
+          full_name: u.full_name,
+          department: u.department,
+          leave_type_id: lt.id,
+          leave_type: lt.name,
+          remaining_days: bal.remaining_days != null ? bal.remaining_days : lt.default_days,
+          accrued_days: lt.name.toLowerCase() === 'annual' ? (bal.accrued_days != null ? bal.accrued_days : 0) : undefined
+        });
+      });
+    });
+    res.json(result);
+>>>>>>> d03d514 (Initial push: leave management system)
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'db' });
@@ -539,9 +1248,28 @@ app.put('/api/balances/:userId/:leaveTypeId', requireAuth, async (req, res) => {
   if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
   const userId = parseInt(req.params.userId);
   const leaveTypeId = parseInt(req.params.leaveTypeId);
+<<<<<<< HEAD
   const { remaining_days } = req.body;
 
   try {
+=======
+  const { remaining_days, accrued_days } = req.body;
+
+  try {
+    // Always update both remaining_days and accrued_days if provided
+    if (accrued_days !== undefined) {
+      await query(
+        `MERGE balance AS target
+           USING (VALUES(@p0,@p1,@p2,@p3)) AS src(user_id, leave_type_id, remaining_days, accrued_days)
+           ON target.user_id = src.user_id AND target.leave_type_id = src.leave_type_id
+           WHEN MATCHED THEN UPDATE SET remaining_days = src.remaining_days, accrued_days = src.accrued_days
+           WHEN NOT MATCHED THEN INSERT(user_id, leave_type_id, remaining_days, accrued_days) VALUES(src.user_id, src.leave_type_id, src.remaining_days, src.accrued_days);`,
+        [userId, leaveTypeId, remaining_days ?? 0, accrued_days]
+      );
+      res.json({ ok: true });
+      return;
+    }
+>>>>>>> d03d514 (Initial push: leave management system)
     await query(
       `MERGE balance AS target
          USING (VALUES(@p0,@p1,@p2)) AS src(user_id, leave_type_id, remaining_days)
@@ -746,9 +1474,27 @@ app.get('/api/department/leave-records', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'forbidden' });
     }
 
+<<<<<<< HEAD
     const department = req.session.department;
     if (!department) return res.status(400).json({ error: 'department not set' });
 
+=======
+    // If Elizabeth Mungai, show all pending leave requests for all users
+    if (req.session.userEmail === 'elizabeth.mungai@maishabank.com') {
+      const result = await query(
+        `SELECT lr.id, lr.days, lr.start_date, lr.end_date, lr.reason, lr.status,
+                u.full_name, u.email, lt.name as leave_type
+         FROM leave_requests lr
+         JOIN users u ON u.id = lr.user_id
+         JOIN leave_type lt ON lt.id = lr.leave_type_id
+         WHERE lr.status = 'pending'
+         ORDER BY lr.created_at DESC`
+      );
+      return res.json((result && result.recordset) || []);
+    }
+    const department = req.session.department;
+    if (!department) return res.status(400).json({ error: 'department not set' });
+>>>>>>> d03d514 (Initial push: leave management system)
     const result = await query(
       `SELECT lr.id, lr.days, lr.start_date, lr.end_date, lr.reason, lr.status,
               u.full_name, u.email, lt.name as leave_type
@@ -759,7 +1505,10 @@ app.get('/api/department/leave-records', requireAuth, async (req, res) => {
        ORDER BY lr.created_at DESC`,
       [department]
     );
+<<<<<<< HEAD
 
+=======
+>>>>>>> d03d514 (Initial push: leave management system)
     res.json((result && result.recordset) || []);
   } catch (err) {
     console.error(err);
@@ -834,7 +1583,11 @@ app.post('/api/users', requireAuth, async (req, res) => {
            USING (VALUES(@p0,@p1)) AS src(name, hod_user_id)
            ON target.name = src.name
            WHEN MATCHED THEN UPDATE SET hod_user_id = src.hod_user_id
+<<<<<<< HEAD
            WHEN NOT MATCHED THEN INSERT(name, hod_user_id) VALUES(src.name, src.hod_user_id);`,
+=======
+           WHEN NOT MATCHED THEN INSERT(name,hod_user_id) VALUES(src.name,src.hod_user_id);`,
+>>>>>>> d03d514 (Initial push: leave management system)
         [department, newUserId]
       );
       await initBalances(newUserId);
@@ -928,19 +1681,35 @@ app.put('/api/users/:id', requireAuth, async (req, res) => {
 
     if (role === 'HOD') {
       if (!department) return res.status(400).json({ error: 'HOD must have a department' });
+<<<<<<< HEAD
+=======
+      // Find the current HOD for this department (if any)
+>>>>>>> d03d514 (Initial push: leave management system)
       const deptCheck = await query(
         `SELECT hod_user_id FROM department WHERE name = $1`,
         [department]
       );
       if (deptCheck.recordset.length > 0 && deptCheck.recordset[0].hod_user_id && deptCheck.recordset[0].hod_user_id != id) {
+<<<<<<< HEAD
         return res.status(400).json({ error: 'department already has HOD' });
       }
 
+=======
+        // Demote the old HOD to employee
+        await query(
+          `UPDATE users SET role = 'employee' WHERE id = $1`,
+          [deptCheck.recordset[0].hod_user_id]
+        );
+      }
+>>>>>>> d03d514 (Initial push: leave management system)
       await query(
         `UPDATE users SET full_name = $1, role = $2, department = $3 WHERE id = $4`,
         [full_name, role, department, id]
       );
+<<<<<<< HEAD
 
+=======
+>>>>>>> d03d514 (Initial push: leave management system)
       await query(
         `MERGE department AS target
            USING (VALUES(@p0,@p1)) AS src(name,hod_user_id)
@@ -990,6 +1759,7 @@ app.post('/api/users/:id/reset_password', requireAuth, async (req, res) => {
       `SELECT email FROM users WHERE id = $1`,
       [id]
     );
+<<<<<<< HEAD
 
     if (!userResult.recordset || userResult.recordset.length === 0) {
       return res.status(404).json({ error: 'not found' });
@@ -1032,6 +1802,82 @@ app.delete('/api/users/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'not found' });
     }
 
+=======
+
+    if (!userResult.recordset || userResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+    const userEmail = userResult.recordset[0].email;
+    const hash = bcrypt.hashSync(password, 10);
+    await query(
+      `UPDATE users SET password_hash = $1 WHERE id = $2`,
+      [hash, id]
+    );
+
+    await logAudit(
+      req.session.userId,
+      req.session.userEmail,
+      'RESET_PASSWORD',
+      'user',
+      id,
+      `Password reset for user ID ${id}`
+    );
+
+    // Generate a one-time token for password change (valid 1 hour)
+    const token = crypto.randomBytes(32).toString('hex');
+    passwordResetTokens[token] = { userId: id, expiry: Date.now() + 60 * 60 * 1000 };
+
+    res.json({ ok: true });
+
+    // Send email notification (after response)
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.office365.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'automation@maishabank.com',
+        pass: 'test.test800'
+      }
+    });
+
+    const link = `http://${req.headers.host}/api/password_change/${token}`;
+    const mailOptions = {
+      from: 'automation@maishabank.com',
+      to: userEmail,
+      subject: 'Password Reset Notification',
+      text: `Your password has been reset by the admin.\n\nTo set a new password, click the link below (valid for 1 hour):\n${link}\n\nIf you did not request this, contact support.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error('Email error:', error);
+      } else {
+        console.log('Password reset email sent:', info.response);
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'db' });
+  }
+});
+
+app.delete('/api/users/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+  const id = parseInt(req.params.id);
+
+  try {
+    const userResult = await query(
+      `SELECT email, full_name FROM users WHERE id = $1`,
+      [id]
+    );
+
+    if (!userResult.recordset || userResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'not found' });
+    }
+
+>>>>>>> d03d514 (Initial push: leave management system)
     const userEmail = userResult.recordset[0].email;
     const fullName = userResult.recordset[0].full_name;
 
@@ -1152,7 +1998,11 @@ app.get('/api/employee/:userId/activities', requireAuth, async (req, res) => {
 // ===== ANALYTICS =====
 
 app.get('/api/calc_days', (req, res) => {
+<<<<<<< HEAD
   const { start_date, end_date } = req.body || req.query;
+=======
+  const { start_date, end_date } = req.query;
+>>>>>>> d03d514 (Initial push: leave management system)
   if (!start_date || !end_date) {
     return res.status(400).json({ error: 'missing dates' });
   }
@@ -1194,7 +2044,11 @@ app.get('/api/analytics/types', requireAuth, async (req, res) => {
 
 // ===== SERVER START =====
 
+<<<<<<< HEAD
 const PORT = process.env.PORT || 3003;
+=======
+const PORT = 8080;
+>>>>>>> d03d514 (Initial push: leave management system)
 app.listen(PORT, async () => {
   await initPool();
   await initDb();

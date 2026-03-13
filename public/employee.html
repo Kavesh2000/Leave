@@ -198,10 +198,26 @@
         };
         const status = statusConfig[x.status] || statusConfig['pending'];
         const bgColor = idx % 2 === 0 ? 'transparent' : 'rgba(139, 92, 246, 0.05)';
+<<<<<<< HEAD
         
         const tr = document.createElement('tr');
         tr.style.cssText = `background:${bgColor};border-radius:8px;border:1px solid ${status.color}33;`;
         tr.innerHTML = `<td style="border-radius:8px 0 0 8px;padding:12px;"><span style='background:${status.color}22;color:${status.color};padding:4px 10px;border-radius:6px;font-weight:600;font-size:13px;'>${x.leave_type}</span></td><td style="padding:12px;color:#9ca3af;">${x.start_date}</td><td style="padding:12px;color:#9ca3af;">${x.end_date}</td><td style="padding:12px;text-align:center;"><strong style='color:#1f2937;'>${x.days}d</strong></td><td style="border-radius:0 8px 8px 0;padding:12px;text-align:center;"><span style='background:${status.bg};color:${status.textColor};padding:6px 12px;border-radius:6px;font-weight:600;font-size:12px;'>${status.text}</span></td>`;
+=======
+
+        let rejectionInfo = '';
+        if(x.status === 'rejected') {
+          let who = '';
+          let reason = '';
+          if(x.admin_comment) { who = 'Admin'; reason = x.admin_comment; }
+          else if(x.hod_comment) { who = 'HR'; reason = x.hod_comment; }
+          rejectionInfo = `<div style='font-size:12px;color:#a21caf;margin-top:4px;'>Rejected by <strong>${who}</strong>: ${reason ? reason : 'No reason provided'}</div>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.style.cssText = `background:${bgColor};border-radius:8px;border:1px solid ${status.color}33;`;
+        tr.innerHTML = `<td style="border-radius:8px 0 0 8px;padding:12px;"><span style='background:${status.color}22;color:${status.color};padding:4px 10px;border-radius:6px;font-weight:600;font-size:13px;'>${x.leave_type}</span></td><td style="padding:12px;color:#9ca3af;">${x.start_date}</td><td style="padding:12px;color:#9ca3af;">${x.end_date}</td><td style="padding:12px;text-align:center;"><strong style='color:#1f2937;'>${x.days}d</strong></td><td style="border-radius:0 8px 8px 0;padding:12px;text-align:center;"><span style='background:${status.bg};color:${status.textColor};padding:6px 12px;border-radius:6px;font-weight:600;font-size:12px;'>${status.text}</span>${rejectionInfo}</td>`;
+>>>>>>> d03d514 (Initial push: leave management system)
         tb.appendChild(tr);
       });
     }
@@ -218,7 +234,7 @@
 
     async function calcDays(start,end){
       if(!start || !end) return 0;
-      const res = await fetch('/api/calc_days',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({start_date:start,end_date:end})});
+      const res = await fetch(`/api/calc_days?start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}`);
       if(res.ok){ const j = await res.json(); return j.days; }
       return 0;
     }
